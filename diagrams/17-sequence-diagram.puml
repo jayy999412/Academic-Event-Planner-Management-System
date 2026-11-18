@@ -1,0 +1,81 @@
+@startuml Sequence Diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing true
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 11
+skinparam roundCorner 10
+skinparam sequence {
+    ArrowColor #37474F
+    LifeLineBorderColor #90A4AE
+    ParticipantBackgroundColor #2C3E50
+    ParticipantFontColor #FFFFFF
+    ParticipantBorderColor #2C3E50
+    ParticipantFontSize 11
+}
+skinparam note {
+    BackgroundColor #FFFDE7
+    BorderColor #F9A825
+    FontSize 10
+}
+
+title <size:22><b>Sequence Diagram</b></size>\n<size:14><color:#888888>Student Event Registration & Certificate Flow</color></size>\n
+footer <size:9>Black Book Submission | Academic Event Management System</size>
+
+actor "<b>Student</b>" as Student
+participant "<b>React Frontend</b>" as Frontend
+participant "<b>Registration</b>\n<b>Controller</b>" as RegCtrl
+participant "<b>Registration</b>\n<b>Service</b>" as RegSvc
+participant "<b>Payment</b>\n<b>Controller</b>" as PayCtrl
+participant "<b>Payment</b>\n<b>Service</b>" as PaySvc
+participant "<b>Certificate</b>\n<b>Controller</b>" as CertCtrl
+database "<b>PostgreSQL</b>\nDatabase" as DB
+
+== Step 1: Student Registers for Event ==
+
+Student -> Frontend : Click "Register"
+Frontend -> RegCtrl : POST /api/registrations/register
+RegCtrl -> RegSvc : registerStudent()
+RegSvc -> DB : Save Registration\n(status = Pending)
+DB --> RegSvc : Saved
+RegSvc --> Frontend : Success
+Frontend --> Student : "Registered Successfully"
+
+== Step 2: Admin Approves ==
+
+actor "<b>Admin</b>" as Admin
+Admin -> Frontend : Click "Approve"
+Frontend -> RegCtrl : PUT /api/registrations/approve/{id}
+RegCtrl -> RegSvc : approveRegistration()
+RegSvc -> DB : Update Status\n(status = Approved)
+DB --> RegSvc : Updated
+RegSvc --> Frontend : Success
+Frontend --> Admin : "Approved"
+
+== Step 3: Student Makes Payment ==
+
+Student -> Frontend : Click "Pay Now"
+Frontend -> PayCtrl : POST /api/payments/pay
+PayCtrl -> PaySvc : makePayment()
+PaySvc -> DB : Save Payment\n+ Update Registration\n(paymentStatus = SUCCESS)
+DB --> PaySvc : Saved
+PaySvc --> Frontend : Success
+Frontend --> Student : "Payment Done"
+
+== Step 4: Generate Certificate ==
+
+Admin -> Frontend : Click "Generate Certificate"
+Frontend -> CertCtrl : POST /api/certificates/generate/{id}
+CertCtrl -> DB : Save Certificate\n(CERT-1725...)
+DB --> CertCtrl : Saved
+CertCtrl --> Frontend : Success
+
+== Step 5: Student Downloads Certificate ==
+
+Student -> Frontend : Click "Download"
+Frontend -> CertCtrl : GET /api/certificates/download/{id}
+CertCtrl -> DB : Get Certificate
+DB --> CertCtrl : Certificate Data
+CertCtrl --> Student : PDF File Downloaded
+
+@enduml

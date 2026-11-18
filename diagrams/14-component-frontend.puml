@@ -1,0 +1,165 @@
+@startuml Component Diagram - Frontend
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing true
+skinparam roundCorner 20
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 11
+skinparam package {
+    FontStyle bold
+    FontSize 14
+}
+skinparam component {
+    FontSize 11
+    RoundCorner 10
+}
+skinparam database {
+    FontSize 12
+}
+
+title <size:22><b>Academic Event Management System</b></size>\n<size:16><color:#666666>React Frontend — Component Architecture</color></size>\n
+footer <size:10>Prepared for Black Book Submission | Academic Event Management System</size>
+
+package "  <b>App Entry Point</b>  \n<size:10>main.jsx → App.jsx</size>" as Entry #E3F2FD {
+    component [**main.jsx**\nReactDOM.createRoot\n<BrowserRouter>] as Entry_Comp #BBDEFB
+    component [**App.jsx**\nRoute Definitions\n/ /login /register /events\n/dashboard /reports\n/quizzes /certificates\n/notifications /feedback] as App_Routes #BBDEFB
+    component [**BrowserRouter**\nReact Router v7\nNested Routes] as Router #BBDEFB
+
+    Entry_Comp --> App_Routes
+    App_Routes --> Router
+}
+
+package "  <b>Shared Layout</b>  \n<size:10>Navigation & Auth Guard</size>" as Layout #E8F5E9 {
+    component [**AppLayout**\nSidebar + Navbar +\nOutlet (child routes)] as Layout_Comp #C8E6C9
+    component [**Sidebar**\n• Dashboard\n• Events\n• My Registrations\n• Quizzes\n• Certificates\n• Reports\n• Feedback\n• Notifications] as Sidebar #C8E6C9
+    component [**Navbar**\n• Logo\n• User Menu\n• Notification Bell\n• Logout] as Navbar #C8E6C9
+    component [**ProtectedRoute**\n• Check localStorage\n• Redirect if no token\n• Role-based access\n• Admin / Student] as Guard #C8E6C9
+
+    Layout_Comp --> Sidebar
+    Layout_Comp --> Navbar
+    Router --> Guard
+    Guard --> Layout_Comp
+}
+
+package "  <b>Page Components</b>  \n<size:10>Feature Pages</size>" as Pages #FFF3E0 {
+
+    package "  <b>Auth</b>  " as Auth_Pages #FFE0B2 {
+        component [Login.jsx\nEmail + Password\nRole Selection] as Login #FFCC80
+        component [Register.jsx\nFull Registration Form] as Register #FFCC80
+        component [Profile.jsx\nView/Edit Profile] as Profile #FFCC80
+        component [ChangePassword.jsx\nOld → New Password] as ChangePass #FFCC80
+    }
+
+    package "  <b>Events</b>  " as Event_Pages #FFE0B2 {
+        component [ViewEvents.jsx\n• Event list (newest first)\n• Category filter tabs\n• Completed toggle\n• Search bar] as ViewEvents #FFCC80
+        component [EventDetails.jsx\n• Event info\n• Register button\n• Payment section\n• Quiz section] as EventDetails #FFCC80
+        component [AddEvent.jsx\n• Full form\n• Banner upload\n• Category/Venue select] as AddEvent #FFCC80
+        component [EditEvent.jsx\n• Pre-filled form\n• Update banner] as EditEvent #FFCC80
+        component [Gallery.jsx\n• Event photos\n• Admin upload] as Gallery #FFCC80
+    }
+
+    package "  <b>Registration</b>  " as Reg_Pages #FFE0B2 {
+        component [MyRegistrations.jsx\n• Student's registrations\n• Status badges\n• Pay Now button] as MyReg #FFCC80
+        component [ParticipantsList.jsx\n• Admin view\n• Approve/Reject\n• Attendance toggle] as Participants #FFCC80
+    }
+
+    package "  <b>Payment</b>  " as Pay_Pages #FFE0B2 {
+        component [PaymentPage.jsx\n• Payment form\n• Amount display\n• Method selection] as Payment #FFCC80
+    }
+
+    package "  <b>Quiz</b>  " as Quiz_Pages #FFE0B2 {
+        component [QuizList.jsx\n• All quizzes\n• Status badges] as QuizList #FFCC80
+        component [CreateQuiz.jsx\n• Admin form] as CreateQuiz #FFCC80
+        component [EditQuiz.jsx\n• Edit form] as EditQuiz #FFCC80
+        component [StartQuiz.jsx\n• MCQ interface\n• Timer\n• Submit] as StartQuiz #FFCC80
+        component [QuestionList.jsx\n• Admin manage\n• Add/Edit/Delete] as QuestionList #FFCC80
+        component [AddQuestion.jsx\n• Question form\n• 4 options + answer] as AddQuestion #FFCC80
+        component [EditQuestion.jsx\n• Edit question] as EditQuestion #FFCC80
+        component [PublishResult.jsx\n• Admin publish\n• View all results] as PublishResult #FFCC80
+        component [QuizResult.jsx\n• Student results\n• Score display] as QuizResult #FFCC80
+    }
+
+    package "  <b>Certificate</b>  " as Cert_Pages #FFE0B2 {
+        component [AdminCertificates.jsx\n• Generate button\n• Category display\n• Download link] as AdminCert #FFCC80
+        component [StudentCertificates.jsx\n• My certificates\n• Download PDF\n• Category badge] as StudentCert #FFCC80
+        component [VerifyCertificate.jsx\n• Public page\n• Certificate number\n• Verify result] as VerifyCert #FFCC80
+    }
+
+    package "  <b>Notification & Feedback</b>  " as Notif_Pages #FFE0B2 {
+        component [Notifications.jsx\n• Notification list\n• Mark as read\n• Mark all read] as Notifications #FFCC80
+        component [Feedback.jsx\n• Star rating\n• Comment box\n• Submit] as Feedback #FFCC80
+        component [FeedbackHistory.jsx\n• My feedback\n• Edit/Delete] as FeedbackHistory #FFCC80
+        component [AdminFeedback.jsx\n• All feedback\n• Rating stats\n• Comments view] as AdminFeedback #FFCC80
+    }
+
+    package "  <b>Dashboard & Reports</b>  " as Report_Pages #FFE0B2 {
+        component [Dashboard.jsx\n• 12 stat cards\n• Pie chart (categories)\n• Bar chart (monthly)\n• Attendance rate] as Dashboard #FFCC80
+        component [Reports.jsx\n• Filterable table\n• Export CSV/PDF\n• Event/Status filter] as Reports #FFCC80
+    }
+}
+
+package "  <b>Service Layer</b>  \n<size:10>API Communication</size>" as Services #E8F5E9 {
+    component [**api.js**\nAxios instance\nbaseURL: localhost:8080\nJWT interceptor\nAuthorization header] as API #C8E6C9
+    component [authService.js\nlogin()\nregister()\ngetProfile()] as AuthSvc #C8E6C9
+    component [eventService.js\ngetAll()\ngetById()\ncreate()\nupdate()\ndelete()] as EventSvc #C8E6C9
+    component [registrationService.js\nregister()\ngetMyRegistrations()\ngetParticipants()] as RegSvc #C8E6C9
+    component [paymentService.js\nmakePayment()\ngetPaymentHistory()] as PaySvc #C8E6C9
+    component [certificateService.js\ngenerate()\ngetMyCertificates()\ndownload()\nverify()] as CertSvc #C8E6C9
+    component [quizService.js\ngetAll()\ngetById()\ncreate()\nsubmit()] as QuizSvc #C8E6C9
+    component [notificationService.js\ngetAll()\nmarkRead()\nmarkAllRead()] as NotifSvc #C8E6C9
+    component [feedbackService.js\nsubmit()\ngetMyFeedback()] as FeedSvc #C8E6C9
+    component [dashboardService.js\ngetAdminDashboard()\ngetStudentDashboard()] as DashSvc #C8E6C9
+    component [reportService.js\ngetReports()\nexportCsv()\nexportPdf()] as ReportSvc #C8E6C9
+}
+
+' ============ PAGE TO SERVICE CONNECTIONS ============
+Login --> AuthSvc
+Register --> AuthSvc
+ViewEvents --> EventSvc
+EventDetails --> EventSvc
+EventDetails --> RegSvc
+AddEvent --> EventSvc
+EditEvent --> EventSvc
+MyReg --> RegSvc
+Participants --> RegSvc
+Payment --> PaySvc
+StartQuiz --> QuizSvc
+QuizResult --> QuizSvc
+QuizList --> QuizSvc
+AdminCert --> CertSvc
+StudentCert --> CertSvc
+VerifyCert --> CertSvc
+Notifications --> NotifSvc
+Feedback --> FeedSvc
+FeedbackHistory --> FeedSvc
+AdminFeedback --> FeedSvc
+Dashboard --> DashSvc
+Reports --> ReportSvc
+
+' ============ ALL SERVICES USE API.JS ============
+AuthSvc --> API
+EventSvc --> API
+RegSvc --> API
+PaySvc --> API
+CertSvc --> API
+QuizSvc --> API
+NotifSvc --> API
+FeedSvc --> API
+DashSvc --> API
+ReportSvc --> API
+
+legend bottom left
+  <b>Frontend Technology Stack:</b>
+  |= Component |= Technology |
+  | Framework | React 19 (Functional Components + Hooks) |
+  | Build Tool | Vite 8 (Fast HMR) |
+  | Routing | React Router v7 (Nested Routes) |
+  | HTTP Client | Axios (JWT Interceptor) |
+  | UI Components | Lucide React (Icons) |
+  | Styling | Inline CSS (No external framework) |
+  | State | localStorage (JWT, userId, role) |
+  | Charts | Chart.js / Recharts (Dashboard) |
+  | PDF Download | Blob API (Browser native) |
+endlegend
+
+@enduml

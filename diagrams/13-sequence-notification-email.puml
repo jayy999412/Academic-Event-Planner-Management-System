@@ -1,0 +1,152 @@
+@startuml Sequence Diagram - Notifications & Email
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing true
+skinparam roundCorner 15
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+skinparam sequence {
+    ArrowColor #34495E
+    LifeLineBorderColor #7F8C8D
+    ParticipantBackgroundColor #2C3E50
+    ParticipantFontColor #FFFFFF
+    ParticipantBorderColor #2C3E50
+}
+skinparam note {
+    BackgroundColor #FFFDE7
+    BorderColor #F9A825
+    FontSize 11
+}
+
+title <size:22><b>Academic Event Management System</b></size>\n<size:16><color:#666666>Sequence Diagram — Notification & Email System</color></size>\n
+footer <size:10>Prepared for Black Book Submission | Academic Event Management System</size>
+
+participant "<b>System Event</b>\n(Registration, Payment, etc.)" as Sys
+participant "<b>NotificationService</b>" as NS
+participant "<b>EmailService</b>\n(@Async SMTP)" as ES
+participant "<b>JavaMailSender</b>" as Mail
+participant "<b>SMTP Server</b>\nsmtp.gmail.com:587" as SMTP
+database "<b>PostgreSQL</b>\n(notifications table)" as DB
+database "<b>PostgreSQL</b>\n(users table)" as UDB
+
+== Flow 1: Registration Notification + Email ==
+
+Sys -> NS : createNotificationWithType(\nuser, "Registration Successful",\n"You have been registered for...",\n"REGISTER")
+activate NS
+NS -> DB : save(Notification)\ntitle = "Registration Successful"\nstatus = "UNREAD"\ntype = "REGISTER"
+activate DB
+DB --> NS : Saved (id=1)
+deactivate DB
+deactivate NS
+
+Sys -> ES : sendRegistrationConfirmation(\nuser, event)\n<b>@Async — Non-blocking</b>
+activate ES
+ES -> UDB : findByEmail(user.email)
+activate UDB
+UDB --> ES : User object
+deactivate UDB
+
+ES -> ES : Build email body:\nSubject: "Registration Confirmation"\nBody: "Dear {name},\nYou have been registered for {event}..."
+
+ES -> Mail : SimpleMailMessage\n(to: user@email.com,\nsubject: "Registration Confirmation",\nbody: "...")
+activate Mail
+Mail -> SMTP : **SMTP SEND**\nPort 587\nSTARTTLS encrypted\nAuth: App Password
+activate SMTP
+SMTP --> Mail : 250 OK (Sent)
+deactivate SMTP
+Mail --> ES : (success)
+deactivate Mail
+
+ES --> Sys : (logged: "Email sent to user@email.com")
+deactivate ES
+
+== Flow 2: Payment Notification + Email ==
+
+Sys -> NS : createNotificationWithType(\nuser, "Payment Successful",\n"Your payment of ₹500 has been received",\n"PAYMENT")
+activate NS
+NS -> DB : save(Notification)
+activate DB
+DB --> NS : Saved
+deactivate DB
+deactivate NS
+
+Sys -> ES : sendPaymentConfirmation(\nuser, 500.00, "TXN-12345")
+activate ES
+ES -> UDB : findByEmail()
+UDB --> ES : User
+deactivate UDB
+ES -> Mail : SimpleMailMessage\n"Payment Confirmation — ₹500"
+activate Mail
+Mail -> SMTP : SMTP SEND
+activate SMTP
+SMTP --> Mail : Sent
+deactivate SMTP
+Mail --> ES : (success)
+deactivate Mail
+deactivate ES
+
+== Flow 3: Certificate Notification + Email ==
+
+Sys -> NS : createNotificationWithType(\nuser, "Certificate Generated",\n"Your certificate CERT-1725... is ready",\n"CERTIFICATE")
+activate NS
+NS -> DB : save(Notification)
+activate DB
+DB --> NS : Saved
+deactivate DB
+deactivate NS
+
+Sys -> ES : sendCertificateNotification(\nuser, "CERT-1725559200")
+activate ES
+ES -> UDB : findByEmail()
+UDB --> ES : User
+deactivate UDB
+ES -> Mail : SimpleMailMessage\n"Your Certificate is Ready"
+activate Mail
+Mail -> SMTP : SMTP SEND
+activate SMTP
+SMTP --> Mail : Sent
+deactivate SMTP
+Mail --> ES : (success)
+deactivate Mail
+deactivate ES
+
+== Flow 4: Scheduled Event Reminder (@Scheduled) ==
+
+ES -> ES : <b>@Scheduled(cron = "0 0 18 * * *")</b>\nRuns daily at 6:00 PM
+
+ES -> DB : findByEventDate(tomorrow)\nEvents happening tomorrow
+activate DB
+DB --> ES : List<Event> (e.g., 3 events)
+deactivate DB
+
+loop For each event tomorrow
+    ES -> DB : findByEventId(eventId)\nGet approved registrations
+    activate DB
+    DB --> ES : List<Registration>\n(e.g., 25 students)
+    deactivate DB
+
+    loop For each approved registration
+        ES -> ES : Extract user email\nfrom Registration → User
+        ES -> Mail : sendEventReminder(\nuser, event)\n"Reminder: {event} is tomorrow!"
+        activate Mail
+        Mail -> SMTP : SMTP SEND
+        activate SMTP
+        SMTP --> Mail : Sent
+        deactivate SMTP
+        Mail --> ES : (success)
+        deactivate Mail
+    end
+end
+
+note over ES, SMTP
+  <b>Email System Summary:</b>
+  
+  • All emails sent via <b>@Async</b> (non-blocking, doesn't hold up HTTP response)
+  • SMTP: smtp.gmail.com, Port 587, STARTTLS
+  • Authentication: Gmail App Password (stored in env vars: MAIL_USERNAME, MAIL_PASSWORD)
+  • Email types: Registration, Approval, Rejection, Payment, Certificate, Reminder
+  • Scheduled: Daily 6PM reminders for next-day events
+  • Silent failure: If SMTP not configured, logs WARNING (app continues working)
+end note
+
+@enduml

@@ -1,0 +1,37 @@
+@startuml Registration Wireframe
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 11
+skinparam rectangle {
+    RoundCorner 5
+    BorderColor #CCCCCC
+}
+skinparam card {
+    RoundCorner 5
+    BorderColor #CCCCCC
+}
+
+title **Registration Page Wireframe**
+
+rectangle " " as Main {
+
+  rectangle " " as Left #2563eb {
+    card " **Join Our**\n**Community** " as title #FFFFFF
+    card " Create your account and\nstart managing academic\nevents with our platform. " as desc #FFFFFF
+  }
+
+  rectangle " " as Right #F8FAFC {
+    card " **Create an account**\nFill in your details " as welcome #FFFFFF
+    card " **Full Name**\n[ John Doe ] " as name #FFFFFF
+    card " **Email Address**\n[ you@example.com ] " as email #FFFFFF
+    card " **Phone Number**\n[ +91 98765 43210 ] " as phone #FFFFFF
+    card " **Department**\n[ Computer Science ] " as dept #FFFFFF
+    card " **Password**\n[ password ] Eye " as pass #FFFFFF
+    card " [    **Create Account**    ] " as btn #2563eb
+    card " Already have an account?\n**Sign in** " as link #FFFFFF
+  }
+}
+
+@enduml

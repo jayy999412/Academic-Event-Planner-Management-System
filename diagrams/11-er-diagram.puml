@@ -1,0 +1,169 @@
+@startuml ER Diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+skinparam linetype ortho
+skinparam entity {
+    BackgroundColor #E3F2FD
+    BorderColor #1565C0
+    FontSize 13
+    FontStyle bold
+    RoundCorner 10
+}
+
+title <size:24><b>Entity Relationship Diagram</b></size>\n<size:16><color:#666666>Academic Event Management System</color></size>\n
+
+entity "<b>roles</b>" as roles {
+    * <b>id</b> : INT <<PK>>
+    --
+    * roleName : VARCHAR
+}
+
+entity "<b>users</b>" as users {
+    * <b>id</b> : INT <<PK>>
+    --
+    * fullName : VARCHAR
+    * email : VARCHAR
+    * password : VARCHAR
+    * phone : VARCHAR
+    * department : VARCHAR
+    * <b>role_id</b> : INT <<FK>>
+}
+
+entity "<b>event_categories</b>" as categories {
+    * <b>id</b> : INT <<PK>>
+    --
+    * categoryName : VARCHAR
+}
+
+entity "<b>venues</b>" as venues {
+    * <b>id</b> : INT <<PK>>
+    --
+    * venueName : VARCHAR
+    * building : VARCHAR
+    * capacity : INT
+}
+
+entity "<b>events</b>" as events {
+    * <b>id</b> : INT <<PK>>
+    --
+    * eventTitle : VARCHAR
+    * eventDate : DATE
+    * status : VARCHAR
+    * <b>organizer_id</b> : INT <<FK>>
+    * <b>venue_id</b> : INT <<FK>>
+    * <b>category_id</b> : INT <<FK>>
+}
+
+entity "<b>registrations</b>" as registrations {
+    * <b>id</b> : INT <<PK>>
+    --
+    * status : VARCHAR
+    * paymentStatus : VARCHAR
+    * attendanceStatus : VARCHAR
+    * <b>user_id</b> : INT <<FK>>
+    * <b>event_id</b> : INT <<FK>>
+}
+
+entity "<b>payments</b>" as payments {
+    * <b>id</b> : INT <<PK>>
+    --
+    * amount : DECIMAL
+    * paymentMethod : VARCHAR
+    * transactionId : VARCHAR
+    * <b>registration_id</b> : INT <<FK>>
+}
+
+entity "<b>certificates</b>" as certificates {
+    * <b>id</b> : INT <<PK>>
+    --
+    * certificateNumber : VARCHAR
+    * issueDate : DATE
+    * <b>registration_id</b> : INT <<FK>>
+}
+
+entity "<b>attendance</b>" as attendance {
+    * <b>id</b> : INT <<PK>>
+    --
+    * status : VARCHAR
+    * <b>registration_id</b> : INT <<FK>>
+}
+
+entity "<b>quizzes</b>" as quizzes {
+    * <b>id</b> : INT <<PK>>
+    --
+    * quizTitle : VARCHAR
+    * totalMarks : INT
+    * <b>event_id</b> : INT <<FK>>
+}
+
+entity "<b>questions</b>" as questions {
+    * <b>id</b> : INT <<PK>>
+    --
+    * question : TEXT
+    * optionA : VARCHAR
+    * optionB : VARCHAR
+    * optionC : VARCHAR
+    * optionD : VARCHAR
+    * correctAnswer : VARCHAR
+    * <b>quiz_id</b> : INT <<FK>>
+}
+
+entity "<b>quiz_results</b>" as quiz_results {
+    * <b>id</b> : INT <<PK>>
+    --
+    * score : INT
+    * status : VARCHAR
+    * <b>user_id</b> : INT <<FK>>
+    * <b>quiz_id</b> : INT <<FK>>
+}
+
+entity "<b>notifications</b>" as notifications {
+    * <b>id</b> : INT <<PK>>
+    --
+    * title : VARCHAR
+    * message : TEXT
+    * status : VARCHAR
+    * <b>user_id</b> : INT <<FK>>
+}
+
+entity "<b>feedback</b>" as feedback {
+    * <b>id</b> : INT <<PK>>
+    --
+    * rating : INT
+    * comments : TEXT
+    * <b>registration_id</b> : INT <<FK>>
+}
+
+' ============ RELATIONSHIPS ============
+roles ||--|{ users : "has"
+users ||--|{ events : "creates"
+users ||--|{ registrations : "registers"
+users ||--|{ notifications : "receives"
+users ||--|{ quiz_results : "scores"
+
+categories ||--|{ events : "categorizes"
+venues ||--|{ events : "hosts"
+
+events ||--|{ registrations : "has"
+events ||--|{ quizzes : "contains"
+
+registrations ||--o| payments : "pays"
+registrations ||--o| certificates : "gets"
+registrations ||--|{ attendance : "tracked"
+registrations ||--o| feedback : "gives"
+
+quizzes ||--|{ questions : "has"
+quizzes ||--|{ quiz_results : "produces"
+
+legend bottom right
+  <b>Key:</b>
+  <<PK>> = Primary Key
+  <<FK>> = Foreign Key
+  ||--|{ = One to Many
+  ||--o| = One to One
+endlegend
+
+@enduml

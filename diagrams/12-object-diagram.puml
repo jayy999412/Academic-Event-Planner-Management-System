@@ -1,0 +1,88 @@
+@startuml Object Diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing true
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 14
+skinparam dpi 400
+skinparam object {
+    FontSize 14
+    RoundCorner 3
+    BorderColor #37474F
+}
+skinparam arrow {
+    FontSize 12
+    Color #555555
+    Thickness 1
+}
+
+title <size:28><b>Object Diagram</b></size>\n<size:20><color:#888888>Academic Event Management System</color></size>\n
+
+object "**User : U1**" as U1 {
+    userId = 1
+    username = "jay123"
+    firstName = "Jay"
+    email = "jay@gmail.com"
+    role = ADMIN
+}
+
+object "**Event : E1**" as E1 {
+    eventId = 1
+    eventName = "React Workshop"
+    eventDate = "2026-09-15"
+    maxParticipants = 100
+    status = UPCOMING
+}
+
+object "**Venue : V1**" as V1 {
+    venueName = "Seminar Hall A"
+    capacity = 100
+}
+
+object "**EventCategory : EC1**" as EC1 {
+    categoryName = "Workshop"
+}
+
+object "**Role : R1**" as Role1 {
+    roleName = ADMIN
+}
+
+object "**Registration : RG1**" as RG1 {
+    registrationId = 1
+    status = APPROVED
+    registrationDate = "2026-09-01"
+}
+
+object "**Notification : N1**" as N1 {
+    title = "Approved"
+    type = APPROVAL
+    status = UNREAD
+}
+
+object "**Payment : P1**" as P1 {
+    paymentId = 1
+    amount = 500.00
+    paymentStatus = SUCCESS
+}
+
+object "**Certificate : C1**" as C1 {
+    certificateNumber = "CERT-001"
+    category = Workshop
+}
+
+object "**Attendance : A1**" as A1 {
+    status = PRESENT
+    checkInTime = "09:45"
+}
+
+U1 -right- E1
+E1 -right- V1
+E1 -down- Role1
+V1 -down- EC1
+Role1 -down- RG1
+RG1 -down- N1
+RG1 -down- P1
+P1 -down- C1
+C1 -down- A1
+
+@enduml

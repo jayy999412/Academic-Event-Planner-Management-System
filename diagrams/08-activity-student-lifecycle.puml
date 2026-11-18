@@ -1,0 +1,54 @@
+@startuml Activity Diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+skinparam activity {
+    FontSize 12
+    RoundCorner 20
+    BorderColor #546E7A
+    BackgroundColor #E3F2FD
+    FontStyle bold
+}
+skinparam activityDiamond {
+    FontSize 11
+    BorderColor #F9A825
+    BackgroundColor #FFF9C4
+}
+skinparam arrow {
+    Color #546E7A
+    FontSize 10
+    Thickness 1.5
+}
+
+title <size:24><b>Activity Diagram</b></size>\n<size:16><color:#888888>Student Event Registration Flow</color></size>\n
+footer <size:9>Black Book Submission | Academic Event Management System</size>
+
+start
+
+:Student **Logs In**;
+
+:Browse **Events**;
+
+:Register for **Event**;
+
+if (Payment Required?) then (Yes)
+    :Make **Payment**;
+else (No)
+endif
+
+:Wait for **Admin Approval**;
+
+if (Approved?) then (Yes)
+    :Attend **Event**;
+    :Receive **Certificate**;
+    :Submit **Feedback**;
+else (Rejected)
+    :Registration **Rejected**;
+    stop
+endif
+
+stop
+
+@enduml

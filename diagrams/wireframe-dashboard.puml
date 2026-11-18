@@ -1,0 +1,48 @@
+@startuml Dashboard Wireframe
+!theme plain
+skinparam backgroundColor #F5F5F5
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+skinparam rectangle {
+    RoundCorner 5
+    BorderColor #CCCCCC
+}
+skinparam card {
+    RoundCorner 5
+    BorderColor #CCCCCC
+    FontSize 11
+}
+
+title **Admin Dashboard — Wireframe**
+
+rectangle " **AEMS**     Dashboard   Events   Registrations   Certificates   Reports     Admin " as navbar #1e293b
+
+rectangle " " as StatsRow #DDDDDD {
+
+  rectangle " " as Block1 #DDDDDD {
+    card " **Total Users**\n125 " as s1 #3B82F6
+    card " **Total Events**\n28 " as s2 #22C55E
+    card " **Registrations**\n340 " as s3 #F97316
+    card " **Revenue**\n45,000 " as s4 #A855F7
+  }
+
+  rectangle " " as Block2 #DDDDDD {
+    card " **Approved**\n280 " as s5 #22C55E
+    card " **Pending**\n45 " as s6 #F97316
+    card " **Certificates**\n195 " as s7 #3B82F6
+    card " **Avg Rating**\n4.2/5 " as s8 #EF4444
+  }
+
+  rectangle " " as ChartsBlock #DDDDDD {
+    card " **Events by Category**\n(Pie Chart) " as c1 #FFFFFF
+    card " **Registrations by Month**\n(Bar Chart) " as c2 #FFFFFF
+  }
+
+  rectangle " " as TablesBlock #DDDDDD {
+    card " **Recent Registrations**\nJay | React Workshop | Approved\nAmit | ML Seminar | Pending " as t1 #FFFFFF
+    card " **Upcoming Events**\nReact Workshop - Sep 15\nML Seminar - Sep 20\nHackathon - Sep 25 " as t2 #FFFFFF
+  }
+}
+
+@enduml

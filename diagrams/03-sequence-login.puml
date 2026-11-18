@@ -1,0 +1,103 @@
+@startuml Sequence Diagram - Login
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing true
+skinparam roundCorner 15
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+skinparam sequence {
+    ArrowColor #34495E
+    LifeLineBorderColor #7F8C8D
+    ParticipantBackgroundColor #2C3E50
+    ParticipantFontColor #FFFFFF
+    ParticipantBorderColor #2C3E50
+    BoxBackgroundColor #F8F9FA
+    BoxBorderColor #DEE2E6
+}
+skinparam note {
+    BackgroundColor #FFFDE7
+    BorderColor #F9A825
+    FontSize 11
+}
+
+title <size:22><b>Academic Event Management System</b></size>\n<size:16><color:#666666>Sequence Diagram — User Authentication & Login</color></size>\n
+footer <size:10>Prepared for Black Book Submission | Academic Event Management System</size>
+
+actor "<b>Student / Admin</b>" as User
+participant "<b>React Frontend</b>\n(Login Page)" as FE
+participant "<b>AuthController</b>\n(/api/auth)" as Auth
+participant "<b>SecurityConfig</b>\n(JWT Filter)" as Filter
+participant "<b>CustomUserDetailsService</b>" as UDS
+participant "<b>PasswordEncoder</b>\n(Bcrypt)" as Encoder
+participant "<b>JwtUtil</b>\n(HS256)" as JWT
+database "<b>PostgreSQL</b>\n(users table)" as DB
+
+== Phase 1: User Submits Login Credentials ==
+
+User -> FE : Enter email, password\nand select role
+activate FE
+FE -> Auth : **POST** /api/auth/login\n`{ "email": "...", "password": "..." }`
+activate Auth
+
+Auth -> DB : findByEmail(email)
+activate DB
+DB --> Auth : User object\n(id, password, role)
+deactivate DB
+
+Auth -> Encoder : matches(rawPassword,\nencodedPassword)
+activate Encoder
+Encoder --> Auth : **true** (password verified)
+deactivate Encoder
+
+Auth -> JWT : generateToken(email, role)\n(HMAC-SHA256 algorithm)
+activate JWT
+JWT --> Auth : JWT Token\n(expires in 24 hours)
+deactivate JWT
+
+Auth --> FE : **200 OK**\n`{ "token": "eyJhbG...", "userId": 5,\n"roleName": "STUDENT", "message": "Login successful" }`
+deactivate Auth
+
+FE -> FE : Store token, userId,\nrole in localStorage
+FE -> FE : Set Axios default header:\n`Authorization: Bearer <token>`
+
+FE --> User : Redirect to **Dashboard**
+deactivate FE
+
+note over User, DB
+  <b>Security Flow:</b>
+  1. Passwords are BCrypt-hashed (never stored plain text)
+  2. JWT token signed with HS256 algorithm
+  3. Token contains email + role claims
+  4. Token expires after 24 hours
+  5. Frontend stores token in localStorage
+end note
+
+== Phase 2: Authenticated API Request ==
+
+User -> FE : Click any protected page
+activate FE
+FE -> Filter : HTTP Request\n`Authorization: Bearer eyJhbG...`
+activate Filter
+
+Filter -> JWT : validateToken(token)
+activate JWT
+JWT --> Filter : **true** (token valid, not expired)
+deactivate JWT
+
+Filter -> Filter : Extract email from token\nSet SecurityContext
+Filter -> UDS : loadUserByUsername(email)
+activate UDS
+UDS -> DB : findByEmail(email)
+activate DB
+DB --> UDS : User
+deactivate DB
+UDS --> Filter : UserDetails
+deactivate UDS
+
+Filter --> FE : Request passed security\n(servlet chain continues)
+deactivate Filter
+
+FE --> User : Display protected content
+deactivate FE
+
+@enduml

@@ -1,0 +1,48 @@
+@startuml Component Diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 14
+skinparam dpi 400
+skinparam component {
+    FontSize 14
+    RoundCorner 3
+    BorderColor #444444
+    StereotypeFontSize 0
+}
+skinparam interface {
+    FontSize 12
+}
+skinparam arrow {
+    Color #444444
+    FontSize 12
+    Thickness 1.5
+}
+
+title <size:28><b>Component Diagram</b></size>\n<size:20><color:#888888>Academic Event Management System</color></size>\n
+
+component [JWT Auth] as Auth
+component [User Management] as User
+component [Venue Management] as Venues
+component [Admin Dashboard] as Admin
+component [Event Management] as Events
+component [Registration] as Reg
+component [Notification Service] as Notif
+component [Payment & Certificate] as PayCert
+component [Reports & Analytics] as Reports
+
+Auth ..> User : User Authenticated
+
+User ..> Events
+
+Venues -right- Admin
+Venues ..> Events
+Admin ..> Events
+
+Events -- Reg
+Events -- Notif
+Events -- PayCert
+Events -- Reports
+
+@enduml

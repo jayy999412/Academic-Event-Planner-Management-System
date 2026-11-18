@@ -236,38 +236,9 @@ public class CertificateBackgroundGenerator {
         g.setStroke(new BasicStroke(3));
         g.drawRect(MARGIN + 22, MARGIN + 22, W - (MARGIN + 22) * 2, H - (MARGIN + 22) * 2);
 
-        // Top gradient band (orange → red)
-        for (int i = 0; i < 300; i++) {
-            float r = i / 300f;
-            g.setColor(new Color((int)(210 + r * 35), (int)(75 - r * 30), (int)(25 + r * 20)));
-            g.drawLine(0, 210 + i, W, 210 + i);
-        }
-        g.setColor(new Color(218, 165, 32));
-        g.fillRect(0, 204, W, 7);
-        g.fillRect(0, 510, W, 7);
-
-        // Bottom gradient band (orange → purple)
-        for (int i = 0; i < 260; i++) {
-            float r = i / 260f;
-            g.setColor(new Color((int)(180 + r * 40), (int)(55 + r * 10), (int)(65 + r * 50)));
-            g.drawLine(0, H - 350 + i, W, H - 350 + i);
-        }
-        g.setColor(new Color(218, 165, 32));
-        g.fillRect(0, H - 356, W, 7);
-        g.fillRect(0, H - 90, W, 7);
-
         // Corner circles — concentric
         for (int[] corner : new int[][]{{1, 1}, {-1, 1}, {1, -1}, {-1, -1}}) {
             drawCulturalCorner(g, corner[0], corner[1]);
-        }
-
-        // Decorative dots along accent lines
-        g.setColor(new Color(218, 165, 32));
-        for (int x = 200; x < W - 200; x += 30) {
-            g.fillOval(x - 3, 200, 6, 6);
-            g.fillOval(x - 3, 510, 6, 6);
-            g.fillOval(x - 3, H - 355, 6, 6);
-            g.fillOval(x - 3, H - 90, 6, 6);
         }
 
         // Header divider

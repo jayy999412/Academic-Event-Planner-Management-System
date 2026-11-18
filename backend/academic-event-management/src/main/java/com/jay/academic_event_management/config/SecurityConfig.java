@@ -57,6 +57,9 @@ public class SecurityConfig {
                         // User Registration
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
 
+                        // Roles (public for registration dropdown)
+                        .requestMatchers(HttpMethod.GET, "/api/roles").permitAll()
+
                         // Public APIs - read-only access for all
                         .requestMatchers(
                                 "/api/categories/**",

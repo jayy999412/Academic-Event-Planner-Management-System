@@ -1,0 +1,143 @@
+@startuml Sequence Diagram - Certificate Flow
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing true
+skinparam roundCorner 15
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+skinparam sequence {
+    ArrowColor #34495E
+    LifeLineBorderColor #7F8C8D
+    ParticipantBackgroundColor #2C3E50
+    ParticipantFontColor #FFFFFF
+    ParticipantBorderColor #2C3E50
+}
+skinparam note {
+    BackgroundColor #FFFDE7
+    BorderColor #F9A825
+    FontSize 11
+}
+
+title <size:22><b>Academic Event Management System</b></size>\n<size:16><color:#666666>Sequence Diagram — Certificate Generation & Download</color></size>\n
+footer <size:10>Prepared for Black Book Submission | Academic Event Management System</size>
+
+actor "<b>Admin</b>" as Admin
+actor "<b>Student</b>" as Student
+participant "<b>React Frontend</b>\n(AdminCertificates)" as FE_Admin
+participant "<b>React Frontend</b>\n(StudentCertificates)" as FE_Student
+participant "<b>CertificateController</b>\n(/api/certificates)" as CC
+participant "<b>CertificateService</b>" as CS
+participant "<b>CertificatePdfService</b>\n(iTextPDF 5.5.13)" as CPS
+participant "<b>NotificationService</b>" as NS
+participant "<b>EmailService</b>\n(@Async)" as ES
+database "<b>PostgreSQL</b>" as DB
+
+== Phase 1: Admin Generates Certificate ==
+
+Admin -> FE_Admin : Click "Generate Certificate"\nfor Student #5 in Event #3
+activate FE_Admin
+FE_Admin -> CC : **POST** /api/certificates/generate/12\n(registrationId = 12)
+activate CC
+CC -> CS : generateCertificate(registrationId)
+activate CS
+
+CS -> DB : findByRegistrationId(12)
+activate DB
+DB --> CS : Optional.empty() — \n<b>No existing certificate</b>
+deactivate DB
+
+CS -> DB : findById(12) — load Registration
+activate DB
+DB --> CS : Registration\n(status=Approved, attendance=Present)
+deactivate DB
+
+CS -> CS : Validate eligibility:\n✓ Status = Approved\n✓ Attendance = Present
+
+CS -> CS : Generate certificateNumber\n"CERT-" + timestamp
+
+CS -> DB : save(Certificate)\nissueDate=today, status="Generated"
+activate DB
+DB --> CS : Saved Certificate\n(id = 7, number = "CERT-1725...")
+deactivate DB
+
+CS -> NS : createNotification(student,\n"Certificate Generated",\n"CERTIFICATE")
+activate NS
+NS -> DB : save(Notification)\nstatus = UNREAD
+activate DB
+DB --> NS : Saved
+deactivate DB
+deactivate NS
+
+CS -> ES : sendCertificateNotification(\nstudent, certificateNumber)\n<b>@Async</b>
+activate ES
+ES --> CS : (email queued)
+deactivate ES
+
+CS --> CC : Certificate object\n(id=7, number="CERT-1725...")
+deactivate CS
+CC --> FE_Admin : **200 OK**
+deactivate CC
+FE_Admin --> Admin : "Certificate Generated!" ✅
+deactivate FE_Admin
+
+== Phase 2: Student Downloads Certificate ==
+
+Student -> FE_Student : Click "Download Certificate"\nfor Event #3
+activate FE_Student
+FE_Student -> CC : **GET** /api/certificates/download/12
+activate CC
+
+CC -> CS : getByRegistration(12)
+activate CS
+CS -> DB : findByRegistrationId(12)
+activate DB
+DB --> CS : Certificate object
+deactivate DB
+CS --> CC : Certificate
+deactivate CS
+
+CC -> CPS : generateCertificate(certificate)
+activate CPS
+
+note over CPS
+  <b>CertificatePdfService</b> — PDF Generation Pipeline:
+  1. Determine event category (Workshop/Technical/Seminar/Cultural/Hackathon)
+  2. Load corresponding background PNG (2480×3508px)
+  3. Process college logo (remove white background → transparent)
+  4. Overlay text elements with proper fonts
+  5. Add handwritten signature image
+end note
+
+CPS -> CPS : <b>Step 1:</b> Determine event category\nfrom Event → EventCategory
+
+CPS -> CPS : <b>Step 2:</b> Load background PNG\n`certificate/bg_workshop.png`\n(or bg_technical, bg_seminar, etc.)
+
+CPS -> CPS : <b>Step 3:</b> Load college logo\n`certificate/college_logo.png`\nRemove white background (transparent)
+
+CPS -> CPS : <b>Step 4:</b> Draw text elements:\n• "Certificate of Completion" (title)\n• "This is to certify that" (italic)\n• Student full name (large, bold)\n• Event title\n• Event date\n• Issue date
+
+CPS -> CPS : <b>Step 5:</b> Draw handwritten signature\nimage at bottom-right
+
+CPS --> CC : byte[] (PDF binary data)
+deactivate CPS
+
+CC --> FE_Student : **200 OK**\n`Content-Type: application/pdf`\n`Content-Disposition: attachment`
+deactivate CC
+
+FE_Student -> FE_Student : Trigger browser download\nfilename: "CERT-1725...pdf"
+
+FE_Student --> Student : PDF file downloaded ✅
+deactivate FE_Student
+
+note over Admin, DB
+  <b>Certificate Generation Summary:</b>
+  • Admin triggers generation → validates eligibility (Approved + Present)
+  • Certificate number: "CERT-{timestamp}" (unique)
+  • PDF generated with iTextPDF 5.5.13.3
+  • Category-specific backgrounds: Workshop, Technical, Seminar, Cultural, Hackathon
+  • College logo with transparent background overlay
+  • Dynamic text: student name, event name, date, signature
+  • Notification + email sent to student asynchronously
+end note
+
+@enduml

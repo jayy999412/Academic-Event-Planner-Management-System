@@ -21,17 +21,20 @@ public class RegistrationService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final NotificationService notificationService;
+    private final EmailService emailService;
 
     public RegistrationService(
             RegistrationRepository registrationRepository,
             UserRepository userRepository,
             EventRepository eventRepository,
-            NotificationService notificationService
+            NotificationService notificationService,
+            EmailService emailService
     ) {
         this.registrationRepository = registrationRepository;
         this.userRepository = userRepository;
         this.eventRepository = eventRepository;
         this.notificationService = notificationService;
+        this.emailService = emailService;
     }
 
     private User getCurrentUser() {
@@ -96,6 +99,11 @@ public class RegistrationService {
                         + ". Waiting for approval.",
                 "REGISTRATION"
         );
+
+        // ==========================
+        // Send Registration Confirmation Email
+        // ==========================
+        emailService.sendRegistrationConfirmation(user, event);
 
         return savedRegistration;
     }
@@ -165,6 +173,9 @@ public class RegistrationService {
             );
         }
 
+        // Send approval email
+        emailService.sendRegistrationApproved(registration.getUser(), registration.getEvent());
+
         return updatedRegistration;
     }
 
@@ -202,6 +213,9 @@ public class RegistrationService {
                     "REGISTRATION"
             );
         }
+
+        // Send rejection email
+        emailService.sendRegistrationRejected(registration.getUser(), registration.getEvent());
 
         return updatedRegistration;
     }
@@ -241,5 +255,13 @@ public class RegistrationService {
         registration.setAttendanceStatus(status);
 
         return registrationRepository.save(registration);
+    }
+
+    // ==========================
+    // Get Registration By ID
+    // ==========================
+    public Registration getRegistrationById(Long id) {
+        return registrationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Registration not found"));
     }
 }

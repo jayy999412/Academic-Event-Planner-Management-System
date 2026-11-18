@@ -1,0 +1,65 @@
+@startuml Events Wireframe
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 26
+skinparam rectangle {
+    RoundCorner 10
+    BorderColor #E2E8F0
+    FontSize 28
+}
+skinparam card {
+    RoundCorner 8
+    BorderColor #E2E8F0
+    FontSize 24
+}
+
+title <size:44><b>Events Page</b></size>\n<size:30><color:#666666>Academic Event Management System</color></size>\n
+
+rectangle " " as TopRow #FFFFFF {
+  card " **Events Management**\nBrowse and manage all academic events " as titleText #FFFFFF
+  card " [ + Create Event ] " as createBtn #2563eb
+}
+
+rectangle " " as SearchRow #F8FAFC {
+  card "   Search events by name, category, or venue... " as search #FFFFFF
+  card " Category    Status    Date Range " as filters #FFFFFF
+  card " Upcoming   Ongoing   Completed " as tabs #FFFFFF
+}
+
+rectangle " " as EventRow {
+
+  rectangle " " as E1 #FFFFFF {
+    card "    (Banner Image) " as img1 #EFF6FF
+    card " Sep 15, 2026 | 10:00 AM " as date1 #DBEAFE
+    card " **React Workshop** " as name1 #FFFFFF
+    card " Organize, manage, and track\nacademic events with a modern\nprofessional platform. " as desc1 #FFFFFF
+    card " Workshop    Seminar Hall A    45/100 seats " as meta1 #F1F5F9
+    card " [ Register ]  [ View Details ] " as btn1 #FFFFFF
+  }
+
+  rectangle " " as E2 #FFFFFF {
+    card "    (Banner Image) " as img2 #DCFCE7
+    card " Sep 20, 2026 | 2:00 PM " as date2 #D1FAE5
+    card " **ML Seminar** " as name2 #FFFFFF
+    card " Organize, manage, and track\nacademic events with a modern\nprofessional platform. " as desc2 #FFFFFF
+    card " Seminar    Auditorium    80/200 seats " as meta2 #F1F5F9
+    card " [ Register ]  [ View Details ] " as btn2 #FFFFFF
+  }
+
+  rectangle " " as E3 #FFFFFF {
+    card "    (Banner Image) " as img3 #FEF3C7
+    card " Sep 25, 2026 | 9:00 AM " as date3 #FDE68A
+    card " **Hackathon 2026** " as name3 #FFFFFF
+    card " Organize, manage, and track\nacademic events with a modern\nprofessional platform. " as desc3 #FFFFFF
+    card " Hackathon    CS Lab    120/150 seats " as meta3 #F1F5F9
+    card " [ Register ]  [ View Details ] " as btn3 #FFFFFF
+  }
+}
+
+rectangle " " as PaginationRow #FFFFFF {
+  card "    Previous    **1**   2   3   4   5    Next    " as pages #F8FAFC
+}
+
+@enduml

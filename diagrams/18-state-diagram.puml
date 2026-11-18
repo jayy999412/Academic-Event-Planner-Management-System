@@ -1,0 +1,52 @@
+@startuml State Diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+skinparam linetype ortho
+skinparam state {
+    FontSize 12
+    RoundCorner 20
+    BorderColor #546E7A
+    BackgroundColor #E3F2FD
+    FontStyle bold
+}
+skinparam arrow {
+    Color #546E7A
+    FontSize 11
+    Thickness 2
+}
+
+title <size:24><b>State Diagram</b></size>\n<size:16><color:#888888>Registration Lifecycle — Academic Event Management System</color></size>\n
+footer <size:9>Black Book Submission | Academic Event Management System</size>
+
+[*] --> Pending : Student Registers
+
+Pending --> Approved : Admin Approves
+Pending --> Rejected : Admin Rejects
+Pending --> Cancelled : Student Cancels
+
+Approved --> Paid : Student Makes Payment
+Approved --> Cancelled : Student Cancels
+
+Paid --> Attended : Student Attends Event
+Paid --> NoShow : Student No Show
+
+Attended --> Certified : Certificate Generated
+
+NoShow --> [*]
+Rejected --> [*]
+Cancelled --> [*]
+Certified --> [*]
+
+state "Pending" as Pending #FFF9C4
+state "Approved" as Approved #C8E6C9
+state "Rejected" as Rejected #FFCDD2
+state "Cancelled" as Cancelled #F5F5F5
+state "Paid" as Paid #E1BEE7
+state "Attended" as Attended #B3E5FC
+state "NoShow" as NoShow #FFCDD2
+state "Certified" as Certified #A5D6A7
+
+@enduml

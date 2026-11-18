@@ -16,15 +16,18 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final RegistrationRepository registrationRepository;
     private final NotificationService notificationService;
+    private final EmailService emailService;
 
     public PaymentService(
             PaymentRepository paymentRepository,
             RegistrationRepository registrationRepository,
-            NotificationService notificationService
+            NotificationService notificationService,
+            EmailService emailService
     ) {
         this.paymentRepository = paymentRepository;
         this.registrationRepository = registrationRepository;
         this.notificationService = notificationService;
+        this.emailService = emailService;
     }
 
     // ==========================
@@ -70,6 +73,15 @@ public class PaymentService {
                         + "' has been received successfully. Transaction ID: "
                         + savedPayment.getTransactionId(),
                 "PAYMENT"
+        );
+
+        // ==========================
+        // Send Payment Confirmation Email
+        // ==========================
+        emailService.sendPaymentConfirmation(
+                registration.getUser(),
+                savedPayment,
+                registration.getEvent()
         );
 
         return savedPayment;

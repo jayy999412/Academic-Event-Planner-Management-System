@@ -1,0 +1,149 @@
+@startuml Sequence Diagram - Quiz Flow
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing true
+skinparam roundCorner 15
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+skinparam sequence {
+    ArrowColor #34495E
+    LifeLineBorderColor #7F8C8D
+    ParticipantBackgroundColor #2C3E50
+    ParticipantFontColor #FFFFFF
+    ParticipantBorderColor #2C3E50
+}
+skinparam note {
+    BackgroundColor #FFFDE7
+    BorderColor #F9A825
+    FontSize 11
+}
+
+title <size:22><b>Academic Event Management System</b></size>\n<size:16><color:#666666>Sequence Diagram — Quiz Creation, Attempt & Result Publishing</color></size>\n
+footer <size:10>Prepared for Black Book Submission | Academic Event Management System</size>
+
+actor "<b>Admin</b>" as Admin
+actor "<b>Student</b>" as Student
+participant "<b>React Frontend</b>" as FE
+participant "<b>QuizController</b>\n(/api/quiz)" as QC
+participant "<b>QuestionController</b>\n(/api/questions)" as QnC
+participant "<b>QuizResultController</b>\n(/api/results)" as QRC
+participant "<b>QuizResultService</b>" as QRS
+participant "<b>NotificationService</b>" as NS
+database "<b>PostgreSQL</b>" as DB
+
+== Phase 1: Admin Creates Quiz ==
+
+Admin -> FE : Navigate to Quiz Management\nfor Event #3
+activate FE
+FE -> QC : **POST** /api/quiz\n`{ "quizTitle": "React Basics",\n"event": { "id": 3 },\n"totalMarks": 100,\n"passingMarks": 40 }`
+activate QC
+QC -> DB : save(Quiz)\nstatus = "Draft"
+activate DB
+DB --> QC : Saved Quiz\n(id = 2)
+deactivate DB
+QC --> FE : **200 OK** — Quiz created
+deactivate QC
+FE --> Admin : Quiz created successfully
+deactivate FE
+
+== Phase 2: Admin Adds Questions ==
+
+loop Add 5 questions to Quiz #2
+    Admin -> FE : Add question with\n4 options + correct answer
+    activate FE
+    FE -> QnC : **POST** /api/questions\n`{ "quiz": { "id": 2 },\n"question": "What is JSX?",\n"optionA": "HTML syntax",\n"optionB": "CSS framework",\n"optionC": "Database",\n"optionD": "None",\n"correctAnswer": "A",\n"marks": 20 }`
+    activate QnC
+    QnC -> DB : save(Question)
+    activate DB
+    DB --> QnC : Saved
+    deactivate DB
+    QnC --> FE : **200 OK**
+    deactivate QnC
+    FE --> Admin : Question added
+    deactivate FE
+end
+
+== Phase 3: Student Takes Quiz ==
+
+Student -> FE : Click "Start Quiz"\non Event Details page
+activate FE
+FE -> QnC : **GET** /api/questions/quiz/2
+activate QnC
+QnC -> DB : findByQuizId(2)
+activate DB
+DB --> QnC : List<Question> (5 questions)
+deactivate DB
+QnC --> FE : Questions JSON\n(options shown, correct answer hidden)
+deactivate QnC
+
+FE --> Student : Display quiz interface\nwith 5 MCQ questions
+deactivate FE
+
+Student -> FE : Answer all questions\nand click "Submit"
+activate FE
+FE -> QRC : **POST** /api/results/submit\n`{ "userId": 5, "quizId": 2,\n"answers": ["A","B","A","C","A"] }`
+activate QRC
+QRC -> QRS : submitQuiz(request)
+activate QRS
+
+QRS -> DB : findByQuizId(2)\n— load Questions with correctAnswer
+activate DB
+DB --> QRS : List<Question>\nwith correctAnswer field
+deactivate DB
+
+QRS -> QRS : <b>Auto-Score Algorithm:</b>\nfor each question:\n  if answer == correctAnswer\n    score += marks\npercentage = (score/totalMarks)*100
+
+QRS -> QRS : Determine status:\npercentage >= passingMarks → "PASS"\npercentage < passingMarks → "FAIL"
+
+QRS -> DB : save(QuizResult)\nscore=80, totalMarks=100,\npercentage=80.0, status="PASS"
+activate DB
+DB --> QRS : Saved QuizResult\n(id = 15)
+deactivate DB
+
+QRS --> QRC : QuizResultResponse\n`{ "score": 80, "totalMarks": 100,\n"percentage": 80.0, "status": "PASS" }`
+deactivate QRS
+QRC --> FE : **200 OK**
+deactivate QRC
+FE --> Student : Display result:\n"Score: 80/100 (80%) — PASS" ✅
+deactivate FE
+
+== Phase 4: Admin Publishes Results ==
+
+Admin -> FE : Click "Publish Results"\non Quiz Management page
+activate FE
+FE -> QRC : **PUT** /api/results/publish/15
+activate QRC
+QRC -> QRS : publishResult(15)
+activate QRS
+
+QRS -> DB : findById(15)\n+ save(published = true)
+activate DB
+DB --> QRS : Result published
+deactivate DB
+
+QRS -> NS : createNotification(student,\n"Quiz Result Published",\n"QUIZ_RESULT")
+activate NS
+NS -> DB : save(Notification)\nstatus = UNREAD
+activate DB
+DB --> NS : Saved
+deactivate DB
+deactivate NS
+
+QRS --> QRC : 200 OK
+deactivate QRS
+QRC --> FE : **200 OK**
+deactivate QRC
+FE --> Admin : "Results published to all students"
+deactivate FE
+
+note over Student, DB
+  <b>Quiz Workflow Summary:</b>
+  • Phase 1: Admin creates quiz (title, marks, passing score)
+  • Phase 2: Admin adds MCQ questions (A/B/C/D + correct answer)
+  • Phase 3: Student attempts quiz → auto-scored instantly
+  • Phase 4: Admin publishes results → students notified
+  • Auto-grading: Server compares answers, calculates score & percentage
+  • Pass/Fail determined by passingMarks threshold
+end note
+
+@enduml

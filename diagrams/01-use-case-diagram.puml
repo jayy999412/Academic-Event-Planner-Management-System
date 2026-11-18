@@ -1,0 +1,70 @@
+@startuml Use Case Diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+skinparam actorStyle awesome
+skinparam linetype ortho
+skinparam usecase {
+    FontSize 12
+    RoundCorner 20
+    BorderColor #37474F
+    BackgroundColor #FFFFFF
+    FontStyle bold
+}
+skinparam rectangle {
+    RoundCorner 25
+    BorderColor #B0BEC5
+    BackgroundColor #FAFAFA
+}
+skinparam arrow {
+    Color #546E7A
+    FontSize 10
+    Thickness 1.5
+}
+
+title <size:24><b>Use Case Diagram</b></size>\n<size:16><color:#888888>Academic Event Management System</color></size>\n
+footer <size:9>Black Book Submission | Academic Event Management System</size>
+
+actor "<b>Student</b>" as Student
+actor "<b>Admin</b>" as Admin
+
+rectangle "  <b>Academic Event Management System</b>  " {
+
+    usecase "Register Account" as UC1
+    usecase "Login" as UC2
+    usecase "View Events" as UC3
+    usecase "Register for Event" as UC4
+    usecase "Make Payment" as UC5
+    usecase "Take Quiz" as UC6
+    usecase "Download Certificate" as UC7
+    usecase "Submit Feedback" as UC8
+    usecase "View Notifications" as UC9
+
+    usecase "Create Event" as UC10
+    usecase "Approve Registration" as UC11
+    usecase "Mark Attendance" as UC12
+    usecase "Generate Certificate" as UC13
+    usecase "View Reports" as UC14
+    usecase "Export CSV/PDF" as UC15
+}
+
+Student --> UC1
+Student --> UC2
+Student --> UC3
+Student --> UC4
+Student --> UC5
+Student --> UC6
+Student --> UC7
+Student --> UC8
+Student --> UC9
+
+Admin --> UC10
+Admin --> UC11
+Admin --> UC12
+Admin --> UC13
+Admin --> UC14
+Admin --> UC15
+
+@enduml

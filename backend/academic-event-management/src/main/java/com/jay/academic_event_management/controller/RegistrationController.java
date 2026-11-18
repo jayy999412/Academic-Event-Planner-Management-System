@@ -112,7 +112,7 @@ public class RegistrationController {
     }
 
     // ==========================
-    // Mark Attendance
+    // Mark Attendance (Admin Manual)
     // ==========================
 
     @PutMapping("/attendance/{id}/{status}")

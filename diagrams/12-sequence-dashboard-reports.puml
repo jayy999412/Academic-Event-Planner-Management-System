@@ -1,0 +1,239 @@
+@startuml Sequence Diagram - Dashboard & Reports
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing true
+skinparam roundCorner 15
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+skinparam sequence {
+    ArrowColor #34495E
+    LifeLineBorderColor #7F8C8D
+    ParticipantBackgroundColor #2C3E50
+    ParticipantFontColor #FFFFFF
+    ParticipantBorderColor #2C3E50
+}
+skinparam note {
+    BackgroundColor #FFFDE7
+    BorderColor #F9A825
+    FontSize 11
+}
+
+title <size:22><b>Academic Event Management System</b></size>\n<size:16><color:#666666>Sequence Diagram — Admin Dashboard & Reports</color></size>\n
+footer <size:10>Prepared for Black Book Submission | Academic Event Management System</size>
+
+actor "<b>Admin</b>" as Admin
+participant "<b>React Frontend</b>\n(Dashboard.jsx)" as FE_Dash
+participant "<b>React Frontend</b>\n(Reports.jsx)" as FE_Reports
+participant "<b>DashboardController</b>\n(/api/dashboard)" as DC
+participant "<b>DashboardService</b>" as DS
+participant "<b>ReportController</b>\n(/api/reports)" as RC
+participant "<b>ReportService</b>" as RS
+participant "<b>ExportController</b>\n(/api/reports/export)" as EC
+participant "<b>CsvExportService</b>" as CSV
+participant "<b>PdfReportService</b>\n(iTextPDF)" as PDF
+database "<b>PostgreSQL</b>" as DB
+
+== Phase 1: Admin Views Dashboard ==
+
+Admin -> FE_Dash : Login as Admin\nNavigate to Dashboard
+activate FE_Dash
+
+FE_Dash -> DC : **GET** /api/dashboard/admin
+activate DC
+DC -> DS : getAdminDashboard()
+activate DS
+
+DS -> DB : countAll() — Total Users
+activate DB
+DB --> DS : 125
+deactivate DB
+
+DS -> DB : countStudents() — Students
+activate DB
+DB --> DS : 110
+deactivate DB
+
+DS -> DB : countFaculty() — Faculty/Admin
+activate DB
+DB --> DS : 15
+deactivate DB
+
+DS -> DB : countAll() — Total Events
+activate DB
+DB --> DS : 28
+deactivate DB
+
+DS -> DB : countByStatus("Upcoming")
+activate DB
+DB --> DS : 12
+deactivate DB
+
+DS -> DB : countByStatus("Ongoing")
+activate DB
+DB --> DS : 5
+deactivate DB
+
+DS -> DB : countByStatus("Completed")
+activate DB
+DB --> DS : 11
+deactivate DB
+
+DS -> DB : countAll() — Total Registrations
+activate DB
+DB --> DS : 340
+deactivate DB
+
+DS -> DB : countByStatus("Approved")
+activate DB
+DB --> DS : 280
+deactivate DB
+
+DS -> DB : countByStatus("Pending")
+activate DB
+DB --> DS : 45
+deactivate DB
+
+DS -> DB : sumSuccessfulRevenue()
+activate DB
+DB --> DS : 45000.00
+deactivate DB
+
+DS -> DB : countAll() — Certificates
+activate DB
+DB --> DS : 195
+deactivate DB
+
+DS -> DB : countByAttendanceStatus("Present")
+activate DB
+DB --> DS : 180
+deactivate DB
+
+DS -> DB : countAll() — Feedbacks
+activate DB
+DB --> DS : 150
+deactivate DB
+
+DS -> DB : getOverallAverageRating()
+activate DB
+DB --> DS : 4.2
+deactivate DB
+
+DS -> DB : GROUP BY category (Pie Chart)
+activate DB
+DB --> DS : [{category: "Workshop", count: 10},\n{category: "Technical", count: 8}, ...]
+deactivate DB
+
+DS -> DB : GROUP BY month (Bar Chart)
+activate DB
+DB --> DS : [{month: "Jan", count: 5},\n{month: "Feb", count: 8}, ...]
+deactivate DB
+
+DS --> DC : DashboardResponse\n(all aggregated data)
+deactivate DS
+DC --> FE_Dash : **200 OK** — Dashboard JSON
+deactivate DC
+
+FE_Dash -> FE_Dash : Render:\n• 12 Stat Cards\n• Pie Chart (Events by Category)\n• Bar Chart (Registrations by Month)\n• Attendance Rate (180/340 = 52.9%)
+
+FE_Dash --> Admin : Dashboard displayed ✅
+deactivate FE_Dash
+
+== Phase 2: Admin Views Reports ==
+
+Admin -> FE_Reports : Navigate to **Reports** page
+activate FE_Reports
+
+FE_Reports -> RC : **GET** /api/reports/registrations
+activate RC
+RC -> RS : getRegistrationReport()
+activate RS
+RS -> DB : findAll() — Registrations\nJOIN user, event
+activate DB
+DB --> RS : List<Registration>
+deactivate DB
+RS --> RC : Report data
+deactivate RS
+RC --> FE_Reports : **200 OK** — Report JSON
+deactivate RC
+
+FE_Reports --> Admin : Display reports table\nwith all registrations
+deactivate FE_Reports
+
+Admin -> FE_Reports : Apply filter:\nEvent = "React Workshop"\nStatus = "Approved"
+activate FE_Reports
+FE_Reports -> RC : **GET** /api/reports/registrations/filtered\n?eventId=3&status=Approved
+activate RC
+RC -> RS : getRegistrationReportFiltered()
+activate RS
+RS -> DB : Custom query with filters
+activate DB
+DB --> RS : Filtered data (25 records)
+deactivate DB
+RS --> RC : Filtered report data
+deactivate RS
+RC --> FE_Reports : **200 OK**
+deactivate RC
+
+FE_Reports -> FE_Reports : Update table with\nfiltered results
+FE_Reports --> Admin : Filtered report displayed
+deactivate FE_Reports
+
+== Phase 3: Admin Exports Data ==
+
+Admin -> FE_Reports : Click **"Export CSV"**
+activate FE_Reports
+FE_Reports -> EC : **GET** /api/reports/export/registrations
+activate EC
+EC -> CSV : exportRegistrationCsv()
+activate CSV
+CSV -> DB : findAll() — Registrations
+activate DB
+DB --> CSV : List<Registration>
+deactivate DB
+CSV -> CSV : Build CSV string:\nheader row + data rows
+CSV --> EC : byte[] (CSV content)
+deactivate CSV
+EC --> FE_Reports : **200 OK**\n`Content-Type: text/csv`\n`Content-Disposition: attachment`
+deactivate EC
+FE_Reports -> FE_Reports : Trigger download\n"registrations.csv"
+FE_Reports --> Admin : CSV file downloaded ✅
+deactivate FE_Reports
+
+Admin -> FE_Reports : Click **"Export PDF"**
+activate FE_Reports
+FE_Reports -> EC : **GET** /api/reports/export/registrations/pdf
+activate EC
+EC -> PDF : generateRegistrationPdf()
+activate PDF
+PDF -> DB : findAll() — Registrations
+activate DB
+DB --> PDF : List<Registration>
+deactivate DB
+PDF -> PDF : Create iTextPDF document:\n• Add title header\n• Create table with columns\n• Populate rows from data\n• Add page numbers
+PDF --> EC : byte[] (PDF content)
+deactivate PDF
+EC --> FE_Reports : **200 OK**\n`Content-Type: application/pdf`
+deactivate EC
+FE_Reports -> FE_Reports : Trigger download\n"registrations.pdf"
+FE_Reports --> Admin : PDF file downloaded ✅
+deactivate FE_Reports
+
+note over Admin, DB
+  <b>Dashboard & Reports Summary:</b>
+  
+  <b>Dashboard:</b>
+  • 12 stat cards: Users, Students, Faculty, Events, Registrations, etc.
+  • Pie chart: Events by Category (Workshop, Technical, Seminar, etc.)
+  • Bar chart: Registrations by Month (Jan-Dec)
+  • Attendance rate: Present / Total Registrations
+  • Revenue: Sum of successful payments
+  • Average feedback rating
+  
+  <b>Reports:</b>
+  • Filterable table (by event, status, date range)
+  • CSV export: Flat file format for Excel
+  • PDF export: Formatted table with headers
+  • Data includes: User, Event, Registration, Payment details
+end note
+
+@enduml

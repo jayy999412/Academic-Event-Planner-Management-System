@@ -1,0 +1,116 @@
+@startuml Deployment Diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing true
+skinparam roundCorner 20
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 11
+skinparam node {
+    BackgroundColor #F5F5F5
+    BorderColor #616161
+    FontStyle bold
+    FontSize 12
+}
+skinparam artifact {
+    BackgroundColor #E3F2FD
+    BorderColor #1565C0
+    FontSize 10
+}
+skinparam database {
+    BackgroundColor #FFF3E0
+    BorderColor #E65100
+    FontSize 11
+}
+skinparam cloud {
+    BackgroundColor #FCE4EC
+    BorderColor #C62828
+    FontSize 11
+}
+skinparam note {
+    BackgroundColor #FFFDE7
+    BorderColor #F9A825
+    FontSize 10
+}
+
+title <size:22><b>Academic Event Management System</b></size>\n<size:16><color:#666666>Deployment Diagram — System Infrastructure</color></size>\n
+footer <size:10>Prepared for Black Book Submission | Academic Event Management System</size>
+
+node "<b>Client Machine</b>\n<size:10>Student / Admin Workstation</size>" as Client #E3F2FD {
+    artifact "<b>Web Browser</b>\nChrome / Firefox / Edge\nPort: 5173" as Browser #BBDEFB
+    artifact "<b>React SPA</b>\nVite Dev Build\nReact 19 + React Router v7" as React #BBDEFB
+    artifact "<b>localStorage</b>\nJWT Token + UserId + Role" as Storage #BBDEFB
+
+    Browser --> React
+    React --> Storage
+}
+
+node "<b>Application Server</b>\n<size:10>localhost (Development)</size>" as Server #E8F5E9 {
+    artifact "<b>Spring Boot 3.5</b>\nJava 21 JDK\nEmbedded Tomcat\nPort: 8080" as SpringBoot #C8E6C9
+    artifact "<b>Spring Security</b>\nJWT Authentication Filter\nCORS Configuration\nCSRF Disabled" as Security #A5D6A7
+    artifact "<b>Hibernate ORM</b>\nJPA + Auto DDL Update\nHikariCP Connection Pool\n(max: 10 connections)" as Hibernate #A5D6A7
+    artifact "<b>iTextPDF 5.5.13.3</b>\nPDF Certificate Generation\nBackground Images\nLogo + Signature Overlay" as iText #A5D6A7
+    artifact "<b>JavaMailSender</b>\nSMTP Client\n@Async Email Sending\nEmail Templates" as Mail #A5D6A7
+    artifact "<b>File Storage</b>\n/uploads/ directory\nImage Validation\nMax: 10MB" as FileStorage #A5D6A7
+
+    SpringBoot --> Security
+    SpringBoot --> Hibernate
+    SpringBoot --> iText
+    SpringBoot --> Mail
+    SpringBoot --> FileStorage
+}
+
+node "<b>Database Server</b>\n<size:10>localhost:5432</size>" as DBServer #FFF3E0 {
+    artifact "<b>PostgreSQL 16</b>\nRelational Database\nACID Compliant" as PostgreSQL #FFE0B2
+    artifact "<b>academic_event_management</b>\n15 Tables\n5 Database Indexes\nAuto Schema Update" as Database #FFE0B2
+
+    PostgreSQL --> Database
+}
+
+cloud "<b>SMTP Server</b>\n<size:10>External Email Provider</size>" as SMTP #FCE4EC {
+    artifact "<b>smtp.gmail.com</b>\nPort: 587\nSTARTTLS Encryption\nApp Password Auth" as GmailSMTP #F8BBD0
+}
+
+' ============ CONNECTIONS ============
+Browser --> SpringBoot : **HTTP/HTTPS**\nREST API (JSON)\n`localhost:8080`\n`Authorization: Bearer JWT`
+
+SpringBoot --> PostgreSQL : **JDBC**\n`localhost:5432`\nHikariCP Pool\n(max: 10 connections)
+
+SpringBoot --> GmailSMTP : **SMTP**\nPort 587\nSTARTTLS Encrypted\n@Async (Non-blocking)
+
+note top of Client
+  <b>Client-Side Stack:</b>
+  • React 19 (Functional Components)
+  • Vite 8 (Build Tool)
+  • React Router v7 (SPA Routing)
+  • Axios (HTTP Client)
+  • Lucide React (Icons)
+  • Inline CSS (No CSS Framework)
+  • localStorage (State Persistence)
+end note
+
+note bottom of Server
+  <b>Server-Side Stack:</b>
+  • Spring Boot 3.5 (Auto-configuration)
+  • Java 21 (Virtual Threads)
+  • Spring Security (JWT-based Auth)
+  • Spring Data JPA (Repository Pattern)
+  • Hibernate ORM (DDL auto=update)
+  • HikariCP (Connection Pooling)
+  • iTextPDF 5.5.13.3 (PDF Generation)
+  • JavaMailSender (SMTP Email)
+  • @Scheduled (Event Reminders)
+  • @Async (Non-blocking Email)
+end note
+
+note right of DBServer
+  <b>Database Details:</b>
+  • Engine: PostgreSQL 16
+  • User: postgres
+  • Database: academic_event_management
+  • Tables: 15 (Users, Events, Registrations, etc.)
+  • Indexes: 5 (Performance Optimization)
+  • Schema: Hibernate Auto-Update (DDL)
+  • No manual SQL migrations needed
+end note
+
+@enduml

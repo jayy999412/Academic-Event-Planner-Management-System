@@ -1,0 +1,299 @@
+@startuml Class Diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing true
+skinparam roundCorner 15
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 11
+skinparam class {
+    BackgroundColor #FAFBFC
+    BorderColor #2C3E50
+    ArrowColor #34495E
+    FontStyle bold
+    FontSize 12
+    HeaderBackgroundColor #2C3E50
+    HeaderFontColor #FFFFFF
+    AttributeFontSize 10
+}
+skinparam classAttributeIconSize 0
+skinparam package {
+    BackgroundColor #F8F9FA
+    BorderColor #DEE2E6
+    FontStyle bold
+    FontSize 14
+}
+skinparam arrow {
+    Color #5D6D7E
+    FontSize 10
+}
+
+title <size:22><b>Academic Event Management System</b></size>\n<size:16><color:#666666>Class Diagram / Entity-Relationship Model</color></size>\n
+footer <size:10>Prepared for Black Book Submission | Academic Event Management System</size>
+
+package "  <b>Role Management</b>  " {
+    class Role {
+        - id : Long <<PK>>
+        - roleName : String
+        --
+        + getId() : Long
+        + getRoleName() : String
+        + setRoleName(name) : void
+    }
+}
+
+package "  <b>User Management</b>  " {
+    class User {
+        - id : Long <<PK>>
+        - fullName : String
+        - email : String <<UNIQUE>>
+        - password : String <<BCrypt>>
+        - phoneNumber : String <<UNIQUE>>
+        - department : String
+        - role : Role <<ManyToOne>>
+        --
+        + getId() : Long
+        + getFullName() : String
+        + getEmail() : String
+        + getPassword() : String <<@JsonIgnore>>
+        + getRole() : Role
+    }
+}
+
+package "  <b>Event Domain</b>  " {
+    class EventCategory {
+        - id : Long <<PK>>
+        - categoryName : String <<UNIQUE>>
+        - description : String
+        --
+        + getId() : Long
+        + getCategoryName() : String
+    }
+
+    class Venue {
+        - id : Long <<PK>>
+        - venueName : String
+        - building : String
+        - floor : String
+        - capacity : Integer
+        - venueType : String
+        - facilities : String
+        - available : Boolean
+        --
+        + getId() : Long
+        + getVenueName() : String
+        + isAvailable() : Boolean
+    }
+
+    class Event {
+        - id : Long <<PK>>
+        - eventTitle : String
+        - description : String(1000)
+        - eventDate : LocalDate
+        - eventTime : LocalTime
+        - registrationDeadline : LocalDate
+        - maxParticipants : Integer
+        - status : String <<Upcoming|Ongoing|Completed>>
+        - paymentRequired : Boolean
+        - registrationFee : Double
+        - bannerImage : String
+        - quizRequired : Boolean
+        - facultyCoordinatorName : String
+        - facultyCoordinatorEmail : String
+        - organizer : User <<ManyToOne>>
+        - venue : Venue <<ManyToOne>>
+        - category : EventCategory <<ManyToOne>>
+        - createdAt : LocalDateTime
+        --
+        + getId() : Long
+        + getEventTitle() : String
+        + getEventDate() : LocalDate
+        + getStatus() : String
+        + isPaymentRequired() : Boolean
+    }
+}
+
+package "  <b>Registration Domain</b>  " {
+    class Registration {
+        - id : Long <<PK>>
+        - registrationDate : LocalDateTime
+        - status : String <<Pending|Approved|Rejected|Cancelled>>
+        - paymentStatus : String <<Pending|SUCCESS>>
+        - attendanceStatus : String <<Not Marked|Present|Absent>>
+        - user : User <<ManyToOne>>
+        - event : Event <<ManyToOne>>
+        - certificateEligible : boolean <<Transient>>
+        --
+        + getId() : Long
+        + getStatus() : String
+        + isCertificateEligible() : boolean
+        + getPaymentStatus() : String
+    }
+}
+
+package "  <b>Payment Domain</b>  " {
+    class Payment {
+        - id : Long <<PK>>
+        - amount : Double
+        - paymentMethod : String
+        - receiptNumber : String <<UNIQUE>>
+        - transactionId : String <<UNIQUE>>
+        - paymentStatus : String <<Pending|SUCCESS|FAILED>>
+        - paymentDate : LocalDateTime
+        - registration : Registration <<ManyToOne>>
+        --
+        + getId() : Long
+        + getAmount() : Double
+        + getReceiptNumber() : String
+        + getPaymentStatus() : String
+    }
+}
+
+package "  <b>Attendance Domain</b>  " {
+    class Attendance {
+        - id : Long <<PK>>
+        - attendanceDate : LocalDate
+        - status : String <<Present|Absent>>
+        - remarks : String
+        - registration : Registration <<ManyToOne>>
+        --
+        + getId() : Long
+        + getStatus() : String
+        + getAttendanceDate() : LocalDate
+    }
+}
+
+package "  <b>Certificate Domain</b>  " {
+    class Certificate {
+        - id : Long <<PK>>
+        - certificateNumber : String <<UNIQUE>>
+        - issueDate : LocalDate
+        - certificateUrl : String
+        - status : String
+        - registration : Registration <<ManyToOne>>
+        --
+        + getId() : Long
+        + getCertificateNumber() : String
+        + getIssueDate() : LocalDate
+    }
+}
+
+package "  <b>Quiz Domain</b>  " {
+    class Quiz {
+        - id : Long <<PK>>
+        - quizTitle : String
+        - description : String
+        - totalMarks : Integer
+        - passingMarks : Integer
+        - status : String
+        - event : Event <<ManyToOne>>
+        - createdAt : LocalDateTime
+        - updatedAt : LocalDateTime
+        --
+        + getId() : Long
+        + getQuizTitle() : String
+        + getTotalMarks() : Integer
+    }
+
+    class Question {
+        - id : Long <<PK>>
+        - question : String(1000)
+        - optionA : String
+        - optionB : String
+        - optionC : String
+        - optionD : String
+        - correctAnswer : String
+        - marks : Integer
+        - quiz : Quiz <<ManyToOne>>
+        --
+        + getId() : Long
+        + getQuestion() : String
+        + getCorrectAnswer() : String
+    }
+
+    class QuizResult {
+        - id : Long <<PK>>
+        - score : Integer
+        - totalMarks : Integer
+        - percentage : Double
+        - status : String <<PASS|FAIL>>
+        - published : Boolean
+        - submittedAt : LocalDateTime
+        - user : User <<ManyToOne>>
+        - quiz : Quiz <<ManyToOne>>
+        --
+        + getId() : Long
+        + getScore() : Integer
+        + getPercentage() : Double
+        + isPublished() : Boolean
+    }
+}
+
+package "  <b>Communication Domain</b>  " {
+    class Notification {
+        - id : Long <<PK>>
+        - title : String
+        - message : String(1000)
+        - type : String
+        - status : String <<UNREAD|READ>>
+        - notificationDate : LocalDateTime
+        - user : User <<ManyToOne>>
+        --
+        + getId() : Long
+        + getTitle() : String
+        + getStatus() : String
+    }
+
+    class Feedback {
+        - id : Long <<PK>>
+        - rating : Integer
+        - comments : String(1000)
+        - feedbackDate : LocalDateTime
+        - registration : Registration <<ManyToOne>>
+        --
+        + getId() : Long
+        + getRating() : Integer
+        + getComments() : String
+    }
+
+    class EventGallery {
+        - id : Long <<PK>>
+        - imagePath : String
+        - event : Event <<ManyToOne>>
+        --
+        + getId() : Long
+        + getImagePath() : String
+    }
+}
+
+' ============ RELATIONSHIPS ============
+Role "1" -- "*" User : has >
+User "1" -- "*" Event : organizes >
+User "1" -- "*" Registration : registers >
+User "1" -- "*" Notification : receives >
+User "1" -- "*" QuizResult : achieves >
+
+Event "1" -- "1" EventCategory : categorized by >
+Event "1" -- "1" Venue : held at >
+Event "1" -- "*" Registration : receives >
+Event "1" -- "*" EventGallery : has >
+Event "1" -- "*" Quiz : contains >
+
+Registration "1" -- "0..1" Payment : has >
+Registration "1" -- "0..1" Certificate : receives >
+Registration "1" -- "*" Attendance : tracked by >
+Registration "1" -- "0..1" Feedback : receives >
+
+Quiz "1" -- "*" Question : contains >
+Quiz "1" -- "*" QuizResult : produces >
+
+legend bottom right
+  |= Symbol |= Description |
+  | <back:#2C3E50><color:white>  </color></back> | Primary Key (PK) |
+  | <<UNIQUE>> | Unique Constraint |
+  | <<BCrypt>> | Encrypted Field |
+  | <<Transient>> | Computed (Not in DB) |
+  | <<ManyToOne>> | Foreign Key Relationship |
+  | ---- | Field Separator |
+endlegend
+
+@enduml

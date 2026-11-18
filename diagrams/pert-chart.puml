@@ -1,0 +1,56 @@
+@startuml PERT Chart
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 20
+skinparam dpi 400
+skinparam rectangle {
+    RoundCorner 0
+    BorderColor #1565C0
+    FontSize 20
+}
+skinparam card {
+    RoundCorner 0
+    BorderColor #CCCCCC
+    FontSize 18
+}
+skinparam arrow {
+    Color #1565C0
+    FontSize 18
+    Thickness 3
+}
+
+title <size:32><b>PERT Chart — Project Timeline</b></size>\n<size:22><color:#666666>Academic Event Management System</color></size>\n
+
+rectangle "** 01 **  **Task**\n**Project Planning & Requirement Analysis**\nStart Day: 01    Finish Day: 05    Duration: 5d" as T1 #1565C0 ##[white]white
+
+rectangle "** 02 **  **Task**\n**System Analysis & Database Design**\nStart Day: 06    Finish Day: 12    Duration: 7d" as T2 #1565C0 ##[white]white
+
+rectangle "** 03 **  **Task**\n**UI Design & Prototype Development**\nStart Day: 13    Finish Day: 17    Duration: 5d" as T3 #1565C0 ##[white]white
+
+rectangle "** 04 **  **Task**\n**Module 1 - User Management & Authentication**\nStart Day: 18    Finish Day: 25    Duration: 8d" as T4 #1565C0 ##[white]white
+
+rectangle "** 05 **  **Task**\n**Module 2 - Event Management**\nStart Day: 26    Finish Day: 36    Duration: 11d" as T5 #1565C0 ##[white]white
+
+rectangle "** 06 **  **Task**\n**Module 3 - Registration & Participant Management**\nStart Day: 37    Finish Day: 45    Duration: 9d" as T6 #1565C0 ##[white]white
+
+rectangle "** 07 **  **Task**\n**Module 4 - Payment & Certificate Management**\nStart Day: 46    Finish Day: 54    Duration: 9d" as T7 #1565C0 ##[white]white
+
+rectangle "** 08 **  **Task**\n**Module 5 - Notification & Feedback**\nStart Day: 55    Finish Day: 61    Duration: 7d" as T8 #1565C0 ##[white]white
+
+rectangle "** 09 **  **Task**\n**Module 6 - Reports & Analytics**\nStart Day: 62    Finish Day: 69    Duration: 8d" as T9 #1565C0 ##[white]white
+
+rectangle "** 10 **  **Task**\n**System Integration & Testing**\nStart Day: 70    Finish Day: 78    Duration: 9d" as T10 #1565C0 ##[white]white
+
+T1 -down-> T2
+T2 -down-> T3
+T3 -down-> T4
+T4 -down-> T5
+T5 -down-> T6
+T6 -down-> T7
+T7 -down-> T8
+T8 -down-> T9
+T9 -down-> T10
+
+@enduml

@@ -1,0 +1,210 @@
+@startuml Sequence Diagram - Attendance & Certificate
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing true
+skinparam roundCorner 15
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+skinparam sequence {
+    ArrowColor #34495E
+    LifeLineBorderColor #7F8C8D
+    ParticipantBackgroundColor #2C3E50
+    ParticipantFontColor #FFFFFF
+    ParticipantBorderColor #2C3E50
+}
+skinparam note {
+    BackgroundColor #FFFDE7
+    BorderColor #F9A825
+    FontSize 11
+}
+
+title <size:22><b>Academic Event Management System</b></size>\n<size:16><color:#666666>Sequence Diagram — Attendance Marking & Certificate Generation</color></size>\n
+footer <size:10>Prepared for Black Book Submission | Academic Event Management System</size>
+
+actor "<b>Student</b>" as Student
+actor "<b>Admin</b>" as Admin
+participant "<b>ParticipantsList</b>\n(Admin Page)" as PL
+participant "<b>RegistrationController</b>\n(/api/registrations)" as RC
+participant "<b>RegistrationService</b>" as RS
+participant "<b>CertificateController</b>\n(/api/certificates)" as CC
+participant "<b>CertificateService</b>" as CS
+participant "<b>CertificatePdfService</b>\n(iTextPDF)" as CPS
+participant "<b>NotificationService</b>" as NS
+participant "<b>EmailService</b>\n(@Async)" as ES
+database "<b>PostgreSQL</b>" as DB
+
+== Phase 1: Admin Views Participants List ==
+
+Admin -> PL : Navigate to Participants\nfor Event #3
+activate PL
+PL -> RC : **GET** /api/registrations/event/3
+activate RC
+RC -> DB : findByEventId(3)\nJOIN fetch user, event
+activate DB
+DB --> RC : List<Registration>\n(45 participants)
+deactivate DB
+RC --> PL : Participants JSON\nwith user details
+deactivate RC
+PL --> Admin : Display table:\n| Name | Status | Payment | Attendance |\n| Jay Patel | Approved | SUCCESS | Not Marked |
+deactivate PL
+
+== Phase 2: Admin Marks Attendance ==
+
+Admin -> PL : Click **"Present"** button\nfor Student #5 (Jay Patel)
+activate PL
+PL -> RC : **PUT** /api/registrations/attendance/12/Present
+activate RC
+
+RC -> RS : markAttendance(12, "Present")
+activate RS
+
+RS -> DB : findById(12)
+activate DB
+DB --> RS : Registration object
+deactivate DB
+
+RS -> RS : Validate:\n• Registration must exist\n• Status must be Approved
+
+RS -> DB : save(registration)\nattendanceStatus = "Present"
+activate DB
+DB --> RS : Updated Registration
+deactivate DB
+
+RS --> RC : Updated Registration
+deactivate RS
+RC --> PL : **200 OK**
+deactivate RC
+
+PL -> PL : Refresh participants table
+PL --> Admin : Student now shows\n"Present" in Attendance column ✅
+deactivate PL
+
+== Phase 3: Admin Generates Certificate ==
+
+Admin -> PL : Click **"Generate Certificate"**\nfor Jay Patel (Registration #12)
+activate PL
+PL -> CC : **POST** /api/certificates/generate/12
+activate CC
+
+CC -> CS : generateCertificate(12)
+activate CS
+
+CS -> DB : findByRegistrationId(12)
+activate DB
+DB --> CS : Optional.empty()\n<b>No duplicate certificate</b>
+deactivate DB
+
+CS -> DB : findById(12)
+activate DB
+DB --> CS : Registration\n(status=Approved, attendance=Present)
+deactivate DB
+
+CS -> CS : Validate eligibility:\n✓ status = Approved\n✓ attendance = Present
+
+CS -> CS : Generate certificateNumber\n"CERT-1725559200"
+
+CS -> DB : save(Certificate)\nissueDate = today
+activate DB
+DB --> CS : Saved Certificate\n(id = 7)
+deactivate DB
+
+CS -> NS : createNotification(student,\n"Certificate Generated",\n"CERTIFICATE")
+activate NS
+NS -> DB : save(Notification)
+activate DB
+DB --> NS : Saved
+deactivate DB
+deactivate NS
+
+CS -> ES : sendCertificateNotification(\nstudent, "CERT-1725559200")\n<b>@Async</b>
+activate ES
+ES --> CS : (email queued)
+deactivate ES
+
+CS --> CC : Certificate\n(id=7, number="CERT-1725559200")
+deactivate CS
+CC --> PL : **200 OK**
+deactivate CC
+PL --> Admin : "Certificate Generated!" ✅
+deactivate PL
+
+== Phase 4: Student Downloads Certificate ==
+
+Student -> PL : Navigate to\n"My Certificates" page
+activate PL
+PL -> CC : **GET** /api/certificates/download/12
+activate CC
+
+CC -> CS : getByRegistration(12)
+activate CS
+CS -> DB : findByRegistrationId(12)
+activate DB
+DB --> CS : Certificate object
+deactivate DB
+CS --> CC : Certificate
+deactivate CS
+
+CC -> CPS : generateCertificate(certificate)
+activate CPS
+
+note over CPS
+  <b>CertificatePdfService — PDF Generation Pipeline:</b>
+  
+  <b>Step 1:</b> Determine event category from Event → EventCategory
+  
+  <b>Step 2:</b> Load category-themed background:
+  • bg_workshop.png (for Workshops)
+  • bg_technical.png (for Technical events)
+  • bg_seminar.png (for Seminars)
+  • bg_cultural.png (for Cultural events)
+  • bg_hackathon.png (for Hackathons)
+  
+  <b>Step 3:</b> Load college_logo.png
+  Remove white background (make transparent)
+  
+  <b>Step 4:</b> Overlay text elements:
+  • "Certificate of Completion" (title)
+  • "This is to certify that" (italic)
+  • Student full name (large, bold)
+  • Event title
+  • Event date + Issue date
+  
+  <b>Step 5:</b> Draw handwritten signature image
+end note
+
+CPS -> CPS : Load background PNG\nbased on event category
+
+CPS -> CPS : Load college_logo.png\nRemove white background
+
+CPS -> CPS : Draw text:\n• Title (centered)\n• Student name (large)\n• Event name\n• Date\n• Signature
+
+CPS --> CC : byte[] (PDF binary data)
+deactivate CPS
+
+CC --> PL : **200 OK**\n`Content-Type: application/pdf`
+deactivate CC
+
+PL -> PL : Trigger browser download\n"CERT-1725559200.pdf"
+PL --> Student : PDF downloaded ✅
+deactivate PL
+
+note over Student, DB
+  <b>Attendance & Certificate Summary:</b>
+  
+  <b>Attendance Flow:</b>
+  • Admin views participants list (filtered by event)
+  • Clicks "Present" / "Absent" for each student
+  • Backend updates attendanceStatus on Registration
+  • Only Approved registrations can be marked
+  
+  <b>Certificate Flow:</b>
+  • Admin triggers generation (validates eligibility)
+  • Certificate number: "CERT-{timestamp}" (unique)
+  • PDF generated with iTextPDF 5.5.13.3
+  • Category-specific backgrounds (5 types)
+  • College logo + handwritten signature overlay
+  • Student downloads PDF from "My Certificates"
+  • Notification + email sent asynchronously
+end note
+
+@enduml

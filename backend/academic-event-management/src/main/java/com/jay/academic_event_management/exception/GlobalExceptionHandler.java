@@ -6,6 +6,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,6 +44,23 @@ public class GlobalExceptionHandler {
 
         Map<String, String> error = new HashMap<>();
         error.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    // Handle Duplicate Key Errors (email/phone already exists)
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+
+        Map<String, String> error = new HashMap<>();
+        String detail = ex.getMessage();
+        if (detail != null && detail.contains("phone_number")) {
+            error.put("message", "Phone number already registered");
+        } else if (detail != null && detail.contains("email")) {
+            error.put("message", "Email already registered");
+        } else {
+            error.put("message", "A record with this information already exists");
+        }
 
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }

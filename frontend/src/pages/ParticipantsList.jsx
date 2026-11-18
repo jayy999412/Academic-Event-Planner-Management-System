@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getEventParticipants, approveRegistration, rejectRegistration, markAttendance } from "../services/registrationService";
-import { ArrowLeft, CheckCircle, XCircle, UserCheck, Award, CreditCard } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle, UserCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const card = { background: "white", borderRadius: "16px", border: "1px solid #f1f5f9" };
@@ -30,7 +30,7 @@ function ParticipantsList() {
         <button onClick={() => navigate(-1)} style={{ width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "10px", background: "white", border: "1px solid #e2e8f0", color: "#475569", cursor: "pointer" }}>
           <ArrowLeft size={20} />
         </button>
-        <div>
+        <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: "24px", fontWeight: 700, color: "#0f172a", margin: 0 }}>Event Participants</h1>
           <p style={{ color: "#64748b", marginTop: "2px", fontSize: "14px" }}>{participants.length} registered participants</p>
         </div>

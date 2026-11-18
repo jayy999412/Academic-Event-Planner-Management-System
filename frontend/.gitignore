@@ -1,5 +1,8 @@
-# Logs
-logs
+
+# ==============================
+# LOG FILES
+# ==============================
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,18 +10,46 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# ==============================
+# FRONTEND (REACT)
+# ==============================
+node_modules/
+frontend/node_modules/
+frontend/dist/
+dist/
+dist-ssr/
 *.local
 
-# Editor directories and files
+# ==============================
+# BACKEND (SPRING BOOT)
+# ==============================
+backend/academic-event-management/bin/
+backend/academic-event-management/target/
+
+# ==============================
+# SENSITIVE FILES
+# ==============================
+.env
+.env.*
+!.env.example
+application-local.properties
+
+# ==============================
+# EDITOR FILES
+# ==============================
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# ==============================
+# JAVA
+# ==============================
+*.class
+*.jar
+*.war

@@ -1,14 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { registerUser } from "../services/authService";
-import { GraduationCap, Mail, Lock, User, Phone, Building2, Eye, EyeOff } from "lucide-react";
+import { registerUser, getRoles } from "../services/authService";
+import { GraduationCap, Mail, Lock, User, Phone, Building2, Shield, Eye, EyeOff } from "lucide-react";
 
 function Register() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [roles, setRoles] = useState([]);
   const [formData, setFormData] = useState({
-    fullName: "", email: "", password: "", phoneNumber: "", department: "", role: { id: 4 }
+    fullName: "", email: "", password: "", phoneNumber: "", department: "", role: { id: 2 }
   });
+
+  useEffect(() => {
+    getRoles().then(setRoles).catch(() => {});
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -21,7 +26,8 @@ function Register() {
       alert("Registration Successful");
       navigate("/");
     } catch (error) {
-      alert(error.response?.data || "Registration Failed");
+      const msg = error.response?.data?.message || error.response?.data || "Registration Failed";
+      alert(typeof msg === "string" ? msg : JSON.stringify(msg));
     }
   };
 
@@ -104,6 +110,26 @@ function Register() {
                   </div>
                 );
               })}
+
+              <div style={{ marginBottom: "16px" }}>
+                <label style={{ display: "block", fontSize: "14px", fontWeight: 500, color: "#334155", marginBottom: "6px" }}>I am a</label>
+                <div style={inputWrap}>
+                  <Shield size={18} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "#94a3b8" }} />
+                  <select
+                    name="role"
+                    value={formData.role.id}
+                    onChange={(e) => setFormData({ ...formData, role: { id: Number(e.target.value) } })}
+                    required
+                    style={{ ...inputStyle, appearance: "none", cursor: "pointer" }}
+                    onFocus={(e) => { e.target.style.borderColor = "#3b82f6"; e.target.style.background = "white"; }}
+                    onBlur={(e) => { e.target.style.borderColor = "#e2e8f0"; e.target.style.background = "#f8fafc"; }}
+                  >
+                    {roles.map((r) => (
+                      <option key={r.id} value={r.id}>{r.roleName}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
 
               <div style={{ marginBottom: "24px" }}>
                 <label style={{ display: "block", fontSize: "14px", fontWeight: 500, color: "#334155", marginBottom: "6px" }}>Password</label>

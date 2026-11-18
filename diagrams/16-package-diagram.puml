@@ -1,0 +1,89 @@
+@startuml Package Diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing true
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 28
+skinparam package {
+    FontSize 30
+    FontStyle bold
+    RoundCorner 15
+    BorderColor #546E7A
+}
+skinparam arrow {
+    Color #37474F
+    FontSize 24
+    Thickness 4
+}
+skinparam component {
+    FontSize 26
+    RoundCorner 5
+}
+
+title <size:48><b>Package Diagram</b></size>\n<size:32><color:#888888>Academic Event Management System</color></size>\n
+footer <size:18>Black Book Submission | Academic Event Management System</size>
+
+package "  <b>Presentation Layer</b>  \n<size:22>React 19 + Vite 8</size>  " as Presentation #E3F2FD {
+    component [Login] as P1 #BBDEFB
+    component [Register] as P2 #BBDEFB
+    component [Dashboard] as P3 #BBDEFB
+    component [Events] as P4 #BBDEFB
+    component [Registrations] as P5 #BBDEFB
+    component [Quiz] as P6 #BBDEFB
+    component [Certificate] as P7 #BBDEFB
+    component [Reports] as P8 #BBDEFB
+}
+
+package "  <b>Controller Layer</b>  \n<size:22>Spring Boot REST APIs</size>  " as Controller #E8F5E9 {
+    component [AuthController] as C1 #C8E6C9
+    component [EventController] as C2 #C8E6C9
+    component [RegistrationController] as C3 #C8E6C9
+    component [PaymentController] as C4 #C8E6C9
+    component [CertificateController] as C5 #C8E6C9
+    component [QuizController] as C6 #C8E6C9
+    component [NotificationController] as C7 #C8E6C9
+    component [ReportController] as C8 #C8E6C9
+}
+
+package "  <b>Service Layer</b>  \n<size:22>Business Logic</size>  " as Service #FFF3E0 {
+    component [UserService] as S1 #FFE0B2
+    component [EventService] as S2 #FFE0B2
+    component [RegistrationService] as S3 #FFE0B2
+    component [PaymentService] as S4 #FFE0B2
+    component [CertificateService] as S5 #FFE0B2
+    component [CertificatePdfService] as S6 #FFE0B2
+    component [QuizService] as S7 #FFE0B2
+    component [EmailService] as S8 #FFE0B2
+    component [NotificationService] as S9 #FFE0B2
+    component [DashboardService] as S10 #FFE0B2
+    component [ReportService] as S11 #FFE0B2
+}
+
+package "  <b>Security Layer</b>  \n<size:22>JWT Authentication</size>  " as Security #FFF9C4 {
+    component [JwtUtil] as SEC1 #FFF176
+    component [JwtFilter] as SEC2 #FFF176
+    component [SecurityConfig] as SEC3 #FFF176
+}
+
+package "  <b>Repository Layer</b>  \n<size:22>Spring Data JPA</size>  " as Repository #FCE4EC {
+    component [UserRepository] as R1 #F8BBD0
+    component [EventRepository] as R2 #F8BBD0
+    component [RegistrationRepository] as R3 #F8BBD0
+    component [PaymentRepository] as R4 #F8BBD0
+    component [CertificateRepository] as R5 #F8BBD0
+    component [QuizRepository] as R6 #F8BBD0
+    component [NotificationRepository] as R7 #F8BBD0
+}
+
+package "  <b>Database Layer</b>  \n<size:22>PostgreSQL 18</size>  " as Database #E0F7FA {
+    database "PostgreSQL" as DB #B2EBF2
+}
+
+' ===== CONNECTIONS =====
+Presentation --> Controller : "HTTP REST API"
+Controller --> Service : "calls"
+Service --> Security : "uses"
+Service --> Repository : "uses"
+Repository --> Database : "JDBC"
+
+@enduml

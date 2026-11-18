@@ -20,17 +20,20 @@ public class CertificateService {
     private final RegistrationRepository registrationRepository;
     private final NotificationService notificationService;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     public CertificateService(
             CertificateRepository certificateRepository,
             RegistrationRepository registrationRepository,
             NotificationService notificationService,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            EmailService emailService) {
 
         this.certificateRepository = certificateRepository;
         this.registrationRepository = registrationRepository;
         this.notificationService = notificationService;
         this.userRepository = userRepository;
+        this.emailService = emailService;
     }
 
     // ==========================
@@ -93,6 +96,13 @@ public class CertificateService {
                     "CERTIFICATE"
             );
         }
+
+        // Send certificate email
+        emailService.sendCertificateNotification(
+                registration.getUser(),
+                certificate.getCertificateNumber(),
+                registration.getEvent()
+        );
 
         return saved;
     }

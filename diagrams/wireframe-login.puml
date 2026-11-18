@@ -1,0 +1,36 @@
+@startuml Login Wireframe
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 11
+skinparam rectangle {
+    RoundCorner 5
+    BorderColor #CCCCCC
+}
+skinparam card {
+    RoundCorner 5
+    BorderColor #CCCCCC
+}
+
+title **Login Page Wireframe**
+
+rectangle " " as Main {
+
+  rectangle " " as Left #2563eb {
+    card " **Academic Event**\n**Management System** " as title #FFFFFF
+    card " Organize, manage, and\ntrack academic events " as desc #FFFFFF
+    card " **500+**  **10K+**  **99%**\nEvents Students Satisfaction " as stats #FFFFFF
+  }
+
+  rectangle " " as Right #F8FAFC {
+    card " **Welcome back**\nSign in to your account " as welcome #FFFFFF
+    card " **Email Address**\n[ you@example.com ] " as email #FFFFFF
+    card " **Password**\n[ password ] Eye " as pass #FFFFFF
+    card " Remember me    Forgot password? " as opts #FFFFFF
+    card " [      **Sign In**      ] " as btn #2563eb
+    card " Don't have account?\n**Create account** " as link #FFFFFF
+  }
+}
+
+@enduml

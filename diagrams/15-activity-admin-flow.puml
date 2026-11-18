@@ -1,0 +1,116 @@
+@startuml Activity Diagram - Admin Workflow
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing true
+skinparam roundCorner 20
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+skinparam activity {
+    BackgroundColor #E8F5E9
+    BorderColor #2E7D32
+    FontSize 12
+    RoundCorner 15
+}
+skinparam activityDiamond {
+    BackgroundColor #FFF9C4
+    BorderColor #F9A825
+    FontSize 11
+}
+skinparam swimlane {
+    BackgroundColor #FAFAFA
+    BorderColor #BDBDBD
+    FontStyle bold
+    FontSize 13
+}
+
+title <size:22><b>Academic Event Management System</b></size>\n<size:16><color:#666666>Activity Diagram — Admin Complete Workflow</color></size>\n
+footer <size:10>Prepared for Black Book Submission | Academic Event Management System</size>
+
+|Admin|
+start
+
+:Login with **ADMIN** credentials;
+
+:View **Dashboard** overview;
+note right
+  Dashboard shows:
+  • Total Users, Events, Registrations
+  • Revenue collected
+  • Attendance rate
+  • Charts (pie + bar)
+end note
+
+:Manage **Events**;
+
+fork
+    :**Create New Event**;
+    :Fill event form:\n• Title, Description\n• Date, Time, Deadline\n• Max Participants\n• Fee (if paid)\n• Category, Venue\n• Coordinator details;
+    :Upload **Banner Image**\n(max 10MB, image only);
+    :Event saved with status = "Upcoming";
+    :Notification sent to ALL users;
+fork again
+    :**Edit Existing Event**;
+    :Update event details;
+fork again
+    :**Delete Event**\n(cascade: Quiz, Gallery,\nFeedback, Certificate,\nAttendance, Payment,\nRegistration);
+end fork
+
+:View **Participants** for event;
+
+fork
+    :**Approve Registration**;
+    :Notification + Email to student;
+fork again
+    :**Reject Registration**;
+    :Notification + Email to student;
+end fork
+
+:Mark **Attendance**\n(Present / Absent);
+
+if (Student Present + Approved?) then (Yes)
+    :Generate **Certificate**;
+    :PDF with:\n• Category background\n• College logo\n• Student name\n• Event name\n• Signature;
+    :Notification + Email to student;
+else (No)
+endif
+
+:Manage **Quizzes**;
+
+fork
+    :**Create Quiz**;
+    :Set title, total marks,\npassing marks;
+fork again
+    :**Add MCQ Questions**;
+    :4 options + correct answer\n+ marks per question;
+end fork
+
+:**Publish Quiz Results**\nwhen students complete;
+
+:Manage **Feedback**;
+:View ratings and comments;
+
+:View **Reports**;
+
+fork
+    :View Registration Report;
+fork again
+    :View Attendance Report;
+fork again
+    :View Payment Report;
+fork again
+    :View Certificate Report;
+fork again
+    :View Feedback Report;
+end fork
+
+fork
+    :**Export as CSV**;
+fork again
+    :**Export as PDF**;
+end fork
+
+:Send **Bulk Notifications**\nto all users;
+
+stop
+
+@enduml

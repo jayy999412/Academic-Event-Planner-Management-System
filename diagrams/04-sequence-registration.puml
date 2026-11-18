@@ -1,0 +1,180 @@
+@startuml Sequence Diagram - Registration Flow
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing true
+skinparam roundCorner 15
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+skinparam dpi 400
+skinparam sequence {
+    ArrowColor #34495E
+    LifeLineBorderColor #7F8C8D
+    ParticipantBackgroundColor #2C3E50
+    ParticipantFontColor #FFFFFF
+    ParticipantBorderColor #2C3E50
+}
+skinparam note {
+    BackgroundColor #FFFDE7
+    BorderColor #F9A825
+    FontSize 11
+}
+
+title <size:22><b>Academic Event Management System</b></size>\n<size:16><color:#666666>Sequence Diagram — Event Registration & Payment Workflow</color></size>\n
+footer <size:10>Prepared for Black Book Submission | Academic Event Management System</size>
+
+actor "<b>Student</b>" as Student
+actor "<b>Admin</b>" as Admin
+participant "<b>React Frontend</b>" as FE
+participant "<b>RegistrationController</b>\n(/api/registrations)" as RC
+participant "<b>RegistrationService</b>" as RS
+participant "<b>NotificationService</b>" as NS
+participant "<b>EmailService</b>\n(@Async SMTP)" as ES
+participant "<b>PaymentController</b>\n(/api/payments)" as PC
+participant "<b>PaymentService</b>" as PS
+database "<b>PostgreSQL</b>" as DB
+
+== Step 1: Student Registers for Event ==
+
+Student -> FE : Click "Register" on\nEvent Details page
+activate FE
+FE -> RC : **POST** /api/registrations/register\n`{ "userId": 5, "eventId": 3 }`
+activate RC
+RC -> RS : registerStudent(request)
+activate RS
+
+RS -> DB : findByUserIdAndEventId(userId, eventId)
+activate DB
+DB --> RS : Optional.empty() — \n<b>No duplicate registration</b>
+deactivate DB
+
+RS -> DB : countByEventId(eventId)
+activate DB
+DB --> RS : currentCount (e.g., 45)
+deactivate DB
+
+RS -> RS : Validate: currentCount < maxParticipants
+
+RS -> DB : save(Registration)\nstatus = "Pending", paymentStatus = "Pending"
+activate DB
+DB --> RS : Saved Registration\n(id = 12)
+deactivate DB
+
+RS -> NS : createNotification(user,\n"Registration Successful",\n"REGISTER")
+activate NS
+NS -> DB : save(Notification)\nstatus = "UNREAD"
+activate DB
+DB --> NS : Saved
+deactivate DB
+deactivate NS
+
+RS -> ES : sendRegistrationConfirmation(user, event)\n<b>@Async — runs in background</b>
+activate ES
+ES -> ES : Build email body\nwith event details
+ES --> RS : (email queued)
+deactivate ES
+
+RS --> RC : Registration object\n(id=12, status="Pending")
+deactivate RS
+RC --> FE : **200 OK**
+deactivate RC
+FE --> Student : "Event Registered Successfully!" ✅
+deactivate FE
+
+== Step 2: Admin Approves Registration ==
+
+Admin -> FE : View Participants List\nfor Event #3
+activate FE
+FE -> RC : **GET** /api/registrations/event/3
+activate RC
+RC -> DB : findByEventId(3)
+activate DB
+DB --> RC : List of 45 registrations
+deactivate DB
+RC --> FE : Registration list JSON
+deactivate RC
+FE --> Admin : Display participants table
+deactivate FE
+
+Admin -> FE : Click "Approve" for\nRegistration #12
+activate FE
+FE -> RC : **PUT** /api/registrations/approve/12
+activate RC
+RC -> RS : approveRegistration(12)
+activate RS
+
+RS -> DB : findById(12)\n+ save(registration)
+activate DB
+DB --> RS : Registration\n(status → "Approved")
+deactivate DB
+
+RS -> NS : createNotification(user,\n"Registration Approved",\n"APPROVAL")
+activate NS
+NS -> DB : save(Notification)
+activate DB
+DB --> NS : Saved
+deactivate DB
+deactivate NS
+
+RS -> ES : sendRegistrationApproved(user, event)\n<b>@Async</b>
+activate ES
+ES --> RS : (email queued)
+deactivate ES
+
+RS --> RC : Updated Registration
+deactivate RS
+RC --> FE : **200 OK**
+deactivate RC
+FE --> Admin : "Registration Approved" ✅
+deactivate FE
+
+== Step 3: Student Makes Payment ==
+
+Student -> FE : Click "Pay Now" on\nMy Registrations page
+activate FE
+FE -> PC : **POST** /api/payments/pay\n`{ "registrationId": 12,\n"paymentMethod": "Credit Card" }`
+activate PC
+PC -> PS : makePayment(request)
+activate PS
+
+PS -> PS : Generate transactionId\n(UUID) & receiptNumber\n("REC-" + timestamp)
+
+PS -> DB : save(Payment)\namount=500, status="SUCCESS"
+activate DB
+DB --> PS : Saved Payment
+deactivate DB
+
+PS -> DB : UPDATE Registration\nSET paymentStatus = "SUCCESS"\nWHERE id = 12
+activate DB
+DB --> PS : Updated
+deactivate DB
+
+PS -> NS : createNotification(user,\n"Payment Successful",\n"PAYMENT")
+activate NS
+NS -> DB : save(Notification)
+activate DB
+DB --> NS : Saved
+deactivate DB
+deactivate NS
+
+PS -> ES : sendPaymentConfirmation(user, amount)\n<b>@Async</b>
+activate ES
+ES --> PS : (email queued)
+deactivate ES
+
+PS --> PC : Payment object\n(receiptNumber: "REC-2026...")
+deactivate PS
+PC --> FE : **200 OK**
+deactivate PC
+FE --> Student : "Payment Confirmed!" ✅
+deactivate FE
+
+note over Student, DB
+  <b>Registration Workflow Summary:</b>
+  • Step 1: Student registers → status = PENDING
+  • Step 2: Admin approves/rejects → status = APPROVED/REJECTED
+  • Step 3: Student pays (if required) → paymentStatus = SUCCESS
+  • Notifications created at each step (in-app)
+  • Emails sent asynchronously (non-blocking)
+end note
+
+@enduml
